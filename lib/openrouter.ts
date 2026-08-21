@@ -14,11 +14,10 @@ export interface OpenRouterOptions {
 }
 
 const DEFAULT_MODELS = [
-    "google/gemini-2.5-flash",
-    "google/gemini-2.0-flash-001",
+    "meta-llama/llama-3.3-70b-instruct",
     "deepseek/deepseek-chat",
     "anthropic/claude-3.5-haiku",
-    "meta-llama/llama-3.3-70b-instruct"
+    "google/gemini-2.5-flash"
 ]
 
 export async function callOpenRouter(
