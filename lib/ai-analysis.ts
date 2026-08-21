@@ -1,12 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
-
-const MODELS = [
-    "gemini-flash-latest",
-    "gemini-2.0-flash-lite",
-    "gemini-2.5-flash",
-];
-
-let globalKeyIndex = 0;
+import { callOpenRouter } from './openrouter'
 
 export interface AccusedEntity {
     name: string
@@ -69,37 +61,12 @@ export async function analyzeWithAI(
         publishedAt = new Date().toISOString().split('T')[0]
     }
 
-    const API_KEYS = [
-        process.env.GEMINI_API_KEY_1,
-        process.env.GEMINI_API_KEY_2,
-        process.env.GEMINI_API_KEY_3,
-        process.env.GEMINI_API_KEY_4,
-        process.env.GEMINI_API_KEY_5,
-        process.env.GEMINI_API_KEY_6,
-        process.env.GEMINI_API_KEY_7,
-        process.env.GEMINI_API_KEY_8,
-        process.env.GEMINI_API_KEY,
-    ].filter(Boolean) as string[]
-
-    let lastError = ''
-
-    const prompt = `
-You are a Senior Anti-Corruption & Financial Crime Intelligence Analyst for the "Bangladesh Corruption Tracker" (বাংলাদেশ দুর্নীতি ট্র্যাকার).
+    const systemPrompt = `You are a Senior Anti-Corruption & Financial Crime Intelligence Analyst for the "Bangladesh Corruption Tracker" (বাংলাদেশ দুর্নীতি ট্র্যাকার).
 Your task is to analyze Bengali/English newspaper articles and extract structured, verified intelligence on incidents of corruption, financial crimes, embezzlement, and institutional irregularities in Bangladesh.
-
-INPUT CONTEXT:
-- Reference Date (Today): ${publishedAt}
-- News Source: ${sourceName}
-- Article URL: ${url}
-- Article Title: ${title}
-- Article Text: 
-"""
-${articleText}
-"""
 
 STRICT OUTPUT RULES:
 1. Output ONLY valid, parsable JSON without markdown wrapping or code blocks.
-2. Comply strictly with the JSON schema described below.
+2. Comply strictly with the JSON schema.
 
 PHASE 1: FILTERING & VALIDATION
 Determine if the article describes genuine corruption in Bangladesh:
@@ -179,54 +146,40 @@ JSON OUTPUT SCHEMA:
   "evidence": string[],
   "category_reasoning": string,
   "extraction_warnings": string[]
-}
-`;
+}`
 
-    if (API_KEYS.length === 0) {
-        console.warn("⚠️ No Gemini API keys configured. Set GEMINI_API_KEY_1..8 in .env");
-        return null;
+    const userPrompt = `INPUT CONTEXT:
+- Reference Date (Today): ${publishedAt}
+- News Source: ${sourceName}
+- Article URL: ${url}
+- Article Title: ${title}
+- Article Text: 
+"""
+${articleText}
+"""`
+
+    try {
+        const responseText = await callOpenRouter([
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+        ], {
+            responseFormatJson: true,
+            temperature: 0.1,
+            timeoutMs: 45000
+        })
+
+        const cleanJson = responseText.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim()
+        const parsed: AIAnalysisResult = JSON.parse(cleanJson)
+
+        parsed.url = url
+        parsed.source_name = sourceName
+        if (parsed.confidence > 0.99) parsed.confidence = 0.99
+
+        return parsed
+    } catch (err: any) {
+        console.error(`❌ OpenRouter AI Analysis failed for URL ${url}:`, err.message || err)
+        return null
     }
-
-    // Try keys with round-robin rotation
-    for (let k = 0; k < API_KEYS.length; k++) {
-        const keyIndex = (globalKeyIndex + k) % API_KEYS.length;
-        const currentKey = API_KEYS[keyIndex];
-
-        for (const modelName of MODELS) {
-            try {
-                const genAI = new GoogleGenerativeAI(currentKey);
-                const model = genAI.getGenerativeModel({ model: modelName });
-
-                const result = await model.generateContent({
-                    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-                    generationConfig: {
-                        temperature: 0.1,
-                        responseMimeType: "application/json",
-                    }
-                });
-
-                const rawText = result.response.text();
-                const cleanJson = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-                const parsed: AIAnalysisResult = JSON.parse(cleanJson);
-
-                parsed.url = url;
-                parsed.source_name = sourceName;
-                if (parsed.confidence > 0.99) parsed.confidence = 0.99;
-
-                globalKeyIndex = keyIndex; // Remember working key
-                return parsed;
-            } catch (err: any) {
-                lastError = err.message || String(err);
-                if (lastError.includes('429') || lastError.includes('quota') || lastError.includes('RESOURCE_EXHAUSTED')) {
-                    console.warn(`⏳ Key index ${keyIndex} exhausted. Trying next key.`);
-                    break;
-                }
-            }
-        }
-    }
-
-    console.error(`❌ AI Analysis failed across all keys/models. Last error: ${lastError}`);
-    return null;
 }
 
 export async function checkDuplicateWithAI(
@@ -235,15 +188,8 @@ export async function checkDuplicateWithAI(
     existingTitle: string,
     existingSummary: string
 ): Promise<boolean> {
-    const API_KEY = process.env.GEMINI_API_KEY_1 || process.env.GEMINI_API_KEY;
-    if (!API_KEY) return false;
-
     try {
-        const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
-
-        const prompt = `
-Compare these two corruption/graft news reports and determine if they describe the SAME core corruption case, investigation, or scam in Bangladesh (even if one is an update, remand, inquiry, or court verdict of the other).
+        const prompt = `Compare these two corruption/graft news reports and determine if they describe the SAME core corruption case, investigation, or scam in Bangladesh (even if one is an update, remand, inquiry, or court verdict of the other).
 
 Report A:
 Title: ${newTitle}
@@ -254,17 +200,20 @@ Title: ${existingTitle}
 Summary: ${existingSummary}
 
 Respond ONLY with valid JSON:
-{ "is_same_incident": true/false, "reason": "brief reason" }
-`;
+{ "is_same_incident": true/false, "reason": "brief reason" }`
 
-        const res = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.0, responseMimeType: "application/json" }
-        });
+        const responseText = await callOpenRouter([
+            { role: 'user', content: prompt }
+        ], {
+            responseFormatJson: true,
+            temperature: 0.0,
+            timeoutMs: 30000
+        })
 
-        const data = JSON.parse(res.response.text());
-        return data.is_same_incident === true;
+        const cleanJson = responseText.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim()
+        const data = JSON.parse(cleanJson)
+        return data.is_same_incident === true
     } catch {
-        return false;
+        return false
     }
 }
