@@ -1,0 +1,25 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+
+puts "🕵️ Debugging server files..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+
+expect "#"
+send "echo '--- PM2 LIST ---'\r"
+send "pm2 list\r"
+send "echo '--- PROCESS LIST ---'\r"
+send "ps aux | grep next\r"
+
+expect "#"
+send "echo '--- CHECKING THEME PROVIDER ---'\r"
+send "grep 'resolvedTheme' components/theme-provider.tsx\r"
+
+expect "#"
+send "exit\r"
+expect eof

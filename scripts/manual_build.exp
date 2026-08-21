@@ -1,0 +1,44 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+
+puts "🛠️  Manual Remote Build..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+
+expect "#"
+send "echo 'Cleaning...'\r"
+send "rm -rf .next\r"
+
+expect "#"
+send "echo 'Running Next.js Build...'\r"
+send "npm run build\r"
+
+# Wait for command output and prompt
+expect {
+    "Error:" { 
+        send_user "\n❌ BUILD FAILED\n" 
+        exit 1
+    }
+    "Compiled successfully" { 
+        send_user "\n✅ BUILD SUCCESSFUL\n" 
+    }
+    timeout {
+        send_user "\n❌ TIMEOUT - Build took too long\n"
+        exit 1
+    }
+}
+
+expect "#"
+send "echo 'Restarting...'\r"
+send "pm2 restart political-violence-tracker\r"
+expect "#"
+send "pm2 restart pvt-admin\r"
+expect "#"
+send "echo '✅ DONE'\r"
+send "exit\r"
+expect eof

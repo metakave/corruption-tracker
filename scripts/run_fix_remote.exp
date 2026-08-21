@@ -1,0 +1,28 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload the TS script
+spawn scp -o StrictHostKeyChecking=no scripts/fix_shariatpur_event_remote.ts $user@$ip:$remote_path/scripts/fix_shariatpur_event_remote.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Execute on server
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect "password:"
+send "$password\r"
+expect "#"
+
+send "cd $remote_path\r"
+send "npx tsx scripts/fix_shariatpur_event_remote.ts\r"
+expect "Fix applied successfully"
+expect "#"
+
+send "exit\r"
+expect eof

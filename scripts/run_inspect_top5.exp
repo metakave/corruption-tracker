@@ -1,0 +1,25 @@
+
+#!/usr/bin/expect -f
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn scp -o StrictHostKeyChecking=no scripts/inspect_top5.ts $user@$ip:/var/www/political_violence_tracker/scripts/
+expect { "password:" { send "$password\r" } }
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect { "password:" { send "$password\r" } }
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+send "npx tsx scripts/inspect_top5.ts\r"
+expect { "Last 5 Created Events" {} }
+expect "#"
+
+send "exit\r"
+expect eof

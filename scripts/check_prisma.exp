@@ -1,0 +1,28 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "echo '--- CHECKING FOR PRISMA PROCESSES ---'\r"
+send "ps aux | grep prisma\r"
+expect "#"
+
+send "echo '--- CHECKING FOR LISTENING PORT 5555 ---'\r"
+send "ss -tulpn | grep :5555\r"
+expect "#"
+
+send "echo '--- PM2 LIST AGAIN ---'\r"
+send "pm2 list\r"
+expect "#"
+
+send "exit\r"
+expect eof

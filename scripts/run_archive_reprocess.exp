@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+set timeout -1
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set dest_path "/var/www/political_violence_tracker"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "cd $dest_path && npx tsx scripts/reprocess_all_raw.ts"
+expect {
+    -re "(?i)password:" {
+        send "$password\r"
+        exp_continue
+    }
+}
+expect eof

@@ -1,0 +1,40 @@
+
+#!/usr/bin/expect -f
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+# 1. Upload the fix script
+spawn scp -o StrictHostKeyChecking=no scripts/fix_db_sources.ts $user@$ip:/var/www/political_violence_tracker/scripts/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# 2. SSH and run it
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+# Run the script using the server's preferred runner (tsx)
+send "echo '🚀 Running Database Fix on Remote...'\r"
+send "npx tsx scripts/fix_db_sources.ts\r"
+expect {
+    "Cleanup Complete" {
+        send "echo '\r\n✅ Remote fix script finished.'\r"
+    }
+    timeout {
+        send "echo '\r\n⚠️ Script timed out or no output matched.'\r"
+    }
+}
+expect "#"
+
+send "exit\r"
+expect eof

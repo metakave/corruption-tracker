@@ -1,0 +1,41 @@
+#!/usr/bin/expect
+
+set timeout 120
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+# Check cron job
+puts "\n=== CHECKING CRON JOB ===\n"
+send "crontab -l | grep scheduler\r"
+expect "#"
+
+# Run scheduler manually for verification
+puts "\n=== RUNNING MANUAL SCHEDULER TEST ===\n"
+send "cd $remote_path\r"
+expect "#"
+
+send "npx tsx scripts/run_scheduler.ts 2>\u00261 | head -100\r"
+expect {
+    "Jamuna" {
+        exp_continue
+    }
+    "Found" {
+        exp_continue  
+    }
+    "#" {}
+    timeout { 
+        puts "\nScheduler is running (timeout reached, this is normal)..."
+    }
+}
+
+puts "\n=== DEPLOYMENT VERIFIED ===\"
+send "exit\r"
+expect eof

@@ -1,0 +1,19 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+spawn scp -o StrictHostKeyChecking=no scripts/fix_coords.js $user@$ip:$remote_path/scripts/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "cd $remote_path && node scripts/fix_coords.js"
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof

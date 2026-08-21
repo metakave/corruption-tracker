@@ -1,0 +1,38 @@
+
+#!/usr/bin/expect -f
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+# 1. Upload Data Page
+spawn scp -o StrictHostKeyChecking=no app/data/page.tsx $user@$ip:/var/www/political_violence_tracker/app/data/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# 2. SSH Build & Restart
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+send "echo '🏗️  Rebuilding Next.js Application...'\r"
+send "npm run build\r"
+expect {
+    "Compiled successfully" {}
+    timeout { send "echo '⚠️ Build timed out waiting for output'\r" }
+}
+expect "#"
+
+send "pm2 restart all\r"
+expect "#"
+
+send "exit\r"
+expect eof

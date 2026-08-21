@@ -1,0 +1,38 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload fixed reprocess script and restore script
+spawn scp -o StrictHostKeyChecking=no scripts/reprocess_all_raw.ts scripts/restore_raw_news.ts $user@$ip:$remote_path/scripts/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Execute Restore
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+send "pm2 stop reprocess-job\r"
+expect "#"
+send "pm2 delete reprocess-job\r"
+expect "#"
+
+send "npx tsx scripts/restore_raw_news.ts\r"
+expect "#"
+
+# Restart Reprocess Job
+send "pm2 start \"npx tsx scripts/reprocess_all_raw.ts\" --name \"reprocess-job\" --no-autorestart\r"
+expect "#"
+send "pm2 save\r"
+expect "#"
+send "exit\r"
+expect eof

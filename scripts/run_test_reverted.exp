@@ -1,0 +1,40 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# SSH to server
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "cd $remote_path\r"
+expect "#"
+
+# Upload test script
+spawn scp -o StrictHostKeyChecking=no scripts/test_reverted.ts $user@$ip:$remote_path/scripts/
+expect "password:" { send "$password\r" }
+expect eof
+
+# Re-login to run test
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect "password:" { send "$password\r" }
+expect "#"
+
+send "cd $remote_path\r"
+expect "#"
+
+# Use loader for ESM support
+send "node --loader ts-node/esm scripts/test_reverted.ts\r"
+expect {
+    "Test failed" { exit 1 }
+    "#" { }
+}
+
+send "exit\r"
+expect eof

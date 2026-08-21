@@ -1,0 +1,27 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload script
+spawn scp -o StrictHostKeyChecking=no scripts/check_specific_event.ts $user@$ip:$remote_path/scripts/check_specific_event.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Execute script
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+send "npx tsx scripts/check_specific_event.ts\r"
+expect "#"
+send "exit\r"
+expect eof

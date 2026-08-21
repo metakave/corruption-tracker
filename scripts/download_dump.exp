@@ -1,0 +1,15 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set file_remote "/var/www/political_violence_tracker/ajker_dump.html"
+set file_local "ajker_dump.html"
+
+# Download
+spawn scp -o StrictHostKeyChecking=no $user@$ip:$file_remote $file_local
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof

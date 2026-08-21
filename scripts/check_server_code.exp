@@ -1,0 +1,13 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+# Check content of page.tsx to see if it has 'isMounted'
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "grep 'isMounted' /var/www/political_violence_tracker/app/audit-dashboard/page.tsx"
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof

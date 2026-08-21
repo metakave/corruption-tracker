@@ -1,0 +1,25 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload updated scheduler script
+spawn scp -o StrictHostKeyChecking=no scripts/run_scheduler.sh $user@$ip:$remote_path/scripts/run_scheduler.sh
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Make executable just in case
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "chmod +x $remote_path/scripts/run_scheduler.sh\r"
+expect "#"
+send "exit\r"
+expect eof

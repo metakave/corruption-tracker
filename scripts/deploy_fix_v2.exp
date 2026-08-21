@@ -1,0 +1,46 @@
+#!/usr/bin/expect
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Step 1: Upload Patch v2
+puts "--- UPLOADING PATCH V2 ---"
+spawn scp -o StrictHostKeyChecking=no deploy_patch_v2.tar.gz $user@$ip:$remote_path/deploy_patch_v2.tar.gz
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Step 2: SSH and Execute
+puts "--- CONNECTING TO SERVER ---"
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect "password:"
+send "$password\r"
+expect "#"
+
+puts "--- EXTRACTING V2 ---"
+send "cd $remote_path\r"
+send "tar -xzf deploy_patch_v2.tar.gz\r"
+
+puts "--- BUILDING (IGNORING TS ERRORS) ---"
+send "npm run build\r"
+
+# Handle build process output
+expect {
+    "Creating an optimized production build" { exp_continue }
+    "Compiled successfully" { exp_continue }
+    "Finalizing page optimization" { exp_continue }
+    -re "root@.*#" { }
+}
+
+puts "--- RESTARTING PM2 ---"
+send "pm2 restart all\r"
+send "pm2 save\r"
+expect "#"
+
+puts "--- DEPLOYMENT V2 COMPLETE ---"
+send "exit\r"
+expect eof

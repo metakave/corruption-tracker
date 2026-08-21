@@ -1,0 +1,41 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# SSH to server
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "cd $remote_path\r"
+expect "#"
+
+# Upload updated files
+spawn scp -o StrictHostKeyChecking=no lib/scrapers/prothomalo.ts $user@$ip:$remote_path/lib/scrapers/
+expect "password:" { send "$password\r" }
+expect eof
+
+spawn scp -o StrictHostKeyChecking=no lib/scrapers/dhakapost.ts $user@$ip:$remote_path/lib/scrapers/
+expect "password:" { send "$password\r" }
+expect eof
+
+# Re-login to restart processes if needed (though these are just lib files)
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect "password:" { send "$password\r" }
+expect "#"
+
+send "cd $remote_path\r"
+expect "#"
+
+# Restart reprocess job to pick up any potential lib changes (though event-processor was already 20)
+send "pm2 restart reprocess-job\r"
+expect "#"
+
+send "exit\r"
+expect eof

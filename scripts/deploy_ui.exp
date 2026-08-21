@@ -1,0 +1,31 @@
+#!/usr/bin/expect
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+set local_file "components/Map.tsx"
+set remote_file "$remote_path/components/Map.tsx"
+
+# Upload Map.tsx
+spawn scp -o StrictHostKeyChecking=no $local_file $user@$ip:$remote_file
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Rebuild and Restart
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+send "npm run build\r"
+expect "#"
+send "pm2 restart all\r"
+expect "#"
+send "exit\r"
+expect eof

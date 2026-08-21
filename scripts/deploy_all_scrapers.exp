@@ -1,0 +1,42 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+
+# Upload all scrapers
+spawn scp -o StrictHostKeyChecking=no lib/scrapers/jamuna.ts lib/scrapers/ajkerpatrika.ts lib/scrapers/samakal.ts lib/scrapers/proxies.ts root@46.224.92.166:/var/www/political_violence_tracker/lib/scrapers/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# SSH and run full crawler
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+
+expect "#"
+send "echo '🚀 RUNNING FULL CRAWLER WITH ALL UPDATED SCRAPERS...'\r"
+send "\r"
+send "npx tsx scripts/run_crawler.ts 2>&1 | tee /tmp/crawler_run.log\r"
+
+expect {
+    "Crawler completed" {
+        send "echo '\r\n✅ Crawler completed successfully'\r"
+    }
+    "Error" {
+        send "echo '\r\n⚠️ Crawler encountered errors but may have partial data'\r"
+    }
+    timeout {
+        send "echo '\r\n⏱️ Crawler is still running...'\r"
+    }
+}
+
+send "echo '\r\n📊 Checking database for new articles...'\r"
+send "psql \$DATABASE_URL -c \"SELECT source, COUNT(*) as count, MAX(created_at) as latest FROM raw_articles WHERE created_at > NOW() - INTERVAL '2 hours' GROUP BY source ORDER BY source;\"\r"
+
+expect "#"
+send "echo '\r\n=== DEPLOYMENT COMPLETE ==='\r"
+send "exit\r"
+expect eof

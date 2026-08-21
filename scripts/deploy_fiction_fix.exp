@@ -1,0 +1,41 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+spawn scp -o StrictHostKeyChecking=no lib/event-processor.ts $user@$ip:$remote_path/lib/event-processor.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+spawn scp -o StrictHostKeyChecking=no scripts/delete_fiction_event.ts $user@$ip:$remote_path/scripts/delete_fiction_event.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+
+# Run cleanup
+send "export \$(grep -v '^#' .env | xargs) && npx tsx scripts/delete_fiction_event.ts\r"
+expect "#"
+
+# Rebuild app to apply lib changes (though event-processor is mostly backend/worker, better safe)
+# Actually, for backend scripts, just restart is enough if using tsx. But if Next.js API uses it, rebuild.
+# The Crawler runs via tsx, so immediate effect.
+# NextJS API might use it for '/api/admin/reprocess', so let's rebuild.
+send "npm run build && pm2 restart all\r"
+expect "#"
+
+send "exit\r"
+expect eof

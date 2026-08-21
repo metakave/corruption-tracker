@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+
+puts "🕷️ Triggering Manual Crawl..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+
+expect "#"
+send "echo '--- STARTING CRAWLER ---'\r"
+send "/bin/bash scripts/run_scheduler.sh\r"
+
+expect "#"
+send "echo '--- CRAWL FINISHED ---'\r"
+send "exit\r"
+expect eof

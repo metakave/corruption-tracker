@@ -1,0 +1,19 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+
+puts "🔍 SEARCHING FOR BACKUPS ON SERVER..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+# Check for any JSON files or backups in the app directory or home
+send "find /var/www/political_violence_tracker -name '*.json' -o -name '*.csv' -o -name '*.log'\r"
+# Also check if there's a dump/ seed file
+send "ls -l /var/www/political_violence_tracker/prisma/\r"
+send "ls -l /var/www/political_violence_tracker/data/\r" 
+
+expect "root@"
+send "exit\r"
+expect eof

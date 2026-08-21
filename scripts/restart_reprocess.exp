@@ -1,0 +1,36 @@
+#!/usr/bin/expect
+
+set timeout 120
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# SSH to server
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "cd $remote_path\r"
+expect "#"
+
+# Stop existing job
+send "pm2 stop reprocess-job\r"
+expect "#"
+
+# Delete to be sure we start fresh
+send "pm2 delete reprocess-job 2>/dev/null || true\r"
+expect "#"
+
+# Start job
+send "pm2 start npx --name reprocess-job -- tsx scripts/reprocess_all_raw.ts\r"
+expect "#"
+
+# Check logs
+send "pm2 logs reprocess-job --lines 20 --nostream\r"
+expect "#"
+
+send "exit\r"
+expect eof

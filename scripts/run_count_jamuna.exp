@@ -1,0 +1,30 @@
+#!/usr/bin/expect
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set file_local "scripts/count_jamuna.ts"
+set file_remote "/var/www/political_violence_tracker/scripts/count_jamuna.ts"
+
+spawn scp -o StrictHostKeyChecking=no $file_local $user@$ip:$file_remote
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "/usr/bin/npx tsx $file_remote\r"
+expect {
+    "Need to install" { send "y\r"; exp_continue }
+    "JAMUNA_COUNT" { expect "#" }
+    timeout { puts "TIMEOUT"; exit 1 }
+}
+send "rm $file_remote\r"
+send "exit\r"
+expect eof

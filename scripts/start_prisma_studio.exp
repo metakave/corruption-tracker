@@ -1,0 +1,38 @@
+#!/usr/bin/expect
+
+set timeout 60
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+send "echo '--- STARTING PRISMA STUDIO ---'\r"
+send "pm2 start \"npx prisma studio --port 5555 --browser none\" --name pvt-admin\r"
+expect {
+    "online" { }
+    "done" { }
+}
+expect "#"
+
+send "echo '--- VERIFYING PORT 5555 ---'\r"
+send "ss -tulpn | grep :5555\r"
+expect "#"
+
+send "echo '--- TESTING LOCALHOST /admin-db/ AFTER START ---'\r"
+send "curl -I http://localhost:5555\r"
+expect "#"
+
+send "pm2 save\r"
+expect "#"
+
+send "exit\r"
+expect eof

@@ -1,0 +1,33 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+puts "\n📊 PRODUCTION STATUS CHECK:\n"
+
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+# Check if scrapers are deployed
+send "ls -lh lib/scrapers/jamuna.ts lib/scrapers/proxies.ts\r"
+expect "#"
+
+# Check cron status
+send "crontab -l | grep scheduler | wc -l\r"
+expect "#"
+
+# Check last scheduler run
+send "tail -5 logs/scheduler.log | grep -E 'SUCCESS|Jamuna|completed'\r"
+expect "#"
+
+puts "\n✅ Status check complete\n"
+send "exit\r"
+expect eof

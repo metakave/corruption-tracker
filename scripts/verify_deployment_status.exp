@@ -1,0 +1,28 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+puts "\n--- 1. CHECKING RUN_SCHEDULER.SH CONTENT ---"
+send "cat $remote_path/scripts/run_scheduler.sh\r"
+expect "#"
+
+puts "\n--- 2. CHECKING DEDUPLICATION SCRIPT EXISTENCE ---"
+send "ls -l $remote_path/scripts/reprocess_deduplication.ts\r"
+expect "#"
+
+puts "\n--- 3. CHECKING SCHEDULER LOGS (LAST 20 LINES) ---"
+send "tail -n 20 $remote_path/logs/scheduler.log\r"
+expect "#"
+
+send "exit\r"
+expect eof

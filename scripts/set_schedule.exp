@@ -1,0 +1,38 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+puts "--- UPDATING RUN_SCHEDULER.SH ---"
+# Replace ts-node with tsx to avoid ESM errors
+send "sed -i 's/npx ts-node/npx tsx/g' $remote_path/scripts/run_scheduler.sh\r"
+
+send "echo '# 1. Morning Crawl - 11:00 AM Bangladesh Time (05:00 UTC)' > /tmp/cron_new\r"
+send "echo '0 5 * * * /bin/bash $remote_path/scripts/run_scheduler.sh >> $remote_path/logs/scheduler.log 2>&1' >> /tmp/cron_new\r"
+send "echo '' >> /tmp/cron_new\r"
+send "echo '# 2. Evening Crawl - 11:00 PM Bangladesh Time (17:00 UTC)' >> /tmp/cron_new\r"
+send "echo '0 17 * * * /bin/bash $remote_path/scripts/run_scheduler.sh >> $remote_path/logs/scheduler.log 2>&1' >> /tmp/cron_new\r"
+send "echo '' >> /tmp/cron_new\r"
+send "echo '# 3. System Maintenance (Runs daily at 4:00 AM UTC)' >> /tmp/cron_new\r"
+send "echo '0 4 * * * /bin/bash $remote_path/scripts/maintain.sh >> $remote_path/logs/maintain.log 2>&1' >> /tmp/cron_new\r"
+send "echo '' >> /tmp/cron_new\r"
+send "echo '# 4. Database Backup (Runs daily at 5:00 AM UTC)' >> /tmp/cron_new\r"
+send "echo '0 5 * * * /bin/bash $remote_path/scripts/backup_db.sh >> $remote_path/logs/backup.log 2>&1' >> /tmp/cron_new\r"
+
+# Install new cron
+send "crontab /tmp/cron_new\r"
+send "crontab -l\r"
+
+expect "#"
+send "exit\r"
+expect eof

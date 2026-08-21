@@ -1,0 +1,42 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload updated library
+spawn scp -o StrictHostKeyChecking=no lib/ai-analysis.ts $user@$ip:$remote_path/lib/ai-analysis.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Upload test script
+spawn scp -o StrictHostKeyChecking=no scripts/test_permanent_fix.ts $user@$ip:$remote_path/scripts/test_permanent_fix.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Build (needed for library update to take effect in compiled app, though tsx uses ts files directly, 
+# but good practice if app imports compiled version)
+# Actually for tsx execution of a script importing a .ts file, it compiles on fly.
+# But for the MAIN APP (Next.js) to use it, we MUST build.
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+send "npm run build\r"
+expect "#"
+send "pm2 restart all\r"
+expect "#"
+send "export \$(grep -v '^#' .env | xargs) && npx tsx scripts/test_permanent_fix.ts\r"
+expect "#"
+send "exit\r"
+expect eof

@@ -1,0 +1,58 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+
+# 1. Package the entire application
+puts "📦 Packaging application..."
+exec tar -czf full_app_deploy.tar.gz app components context lib prisma public scripts package.json package-lock.json next.config.ts tsconfig.json postcss.config.mjs eslint.config.mjs crontab.txt components.json next-env.d.ts
+
+# 2. Upload the package
+puts "🚀 Uploading package to production..."
+spawn scp -o StrictHostKeyChecking=no full_app_deploy.tar.gz root@46.224.92.166:/var/www/political_violence_tracker/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# 3. SSH and build
+puts "🛠️  Building and restarting on server..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+
+expect "#"
+send "tar -xzf full_app_deploy.tar.gz\r"
+
+expect "#"
+send "echo 'Installing dependencies...'\r"
+send "npm install\r"
+
+expect "#"
+send "echo 'Generating Prisma Client...'\r"
+send "npx prisma generate\r"
+
+expect "#"
+send "echo 'Cleaning previous build...'\r"
+send "rm -rf .next\r"
+
+expect "#"
+send "echo 'Running Next.js Build...'\r"
+send "npm run build\r"
+
+expect "#"
+send "echo 'Restarting application...'\r"
+send "pm2 stop all || true\r"
+send "pm2 delete all || true\r"
+send "pkill -f next-server || true\r"
+send "pm2 start npm --name 'political-violence-tracker' -- start\r"
+expect "#"
+send "pm2 start npx --name 'pvt-admin' -- prisma studio --port 5555\r"
+expect "#"
+send "pm2 save\r"
+
+expect "#"
+send "echo '✅ FULL DEPLOYMENT COMPLETE'\r"
+send "exit\r"
+expect eof

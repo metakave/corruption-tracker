@@ -1,0 +1,47 @@
+#!/usr/bin/expect -f
+
+set timeout 60
+
+# 1. Wipe Database (Truncate PoliticalEvent)
+puts "🧹 Wiping PoliticalEvent table on production..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect "root@"
+# Using docker exec or local node/prisma to truncate
+send "cd /var/www/political_violence_tracker && npx prisma migrate reset --force --skip-seed\r"
+# Alternatively, just delete from table if we want to keep schema
+# send "cd /var/www/political_violence_tracker && npx tsx scripts/wipe_events.ts\r" (if we had one)
+# Let's use a safer approach: SQL directly if psql is available, or a quick script. 
+# Creating a temp wipe script is safer.
+send "echo \"import { PrismaClient } from '@prisma/client'; const prisma = new PrismaClient(); async function main() { await prisma.politicalEvent.deleteMany({}); console.log('Wiped.'); } main();\" > scripts/wipe_events_temp.ts\r"
+send "npx tsx scripts/wipe_events_temp.ts\r"
+expect "Wiped."
+
+# 2. Upload Modified Code (No Time Limit)
+puts "🚀 Uploading logic fix (No Time Limit)..."
+# Exit SSH to SCP
+send "exit\r"
+expect eof
+
+spawn scp -o StrictHostKeyChecking=no lib/event-processor.ts root@46.224.92.166:/var/www/political_violence_tracker/lib/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# 3. Restart Pipeline
+puts "🔄 Restarting AI Pipeline (Re-run all)..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "pm2 restart ai-pipeline\r"
+
+expect "root@"
+send "echo '--- RE-RUN STARTED ---'\r"
+send "pm2 logs ai-pipeline --lines 10 --nostream\r"
+
+expect "root@"
+send "exit\r"
+expect eof

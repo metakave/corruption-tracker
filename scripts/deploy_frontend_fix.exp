@@ -1,0 +1,36 @@
+#!/usr/bin/expect
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload RecentFeed.tsx
+spawn scp -o StrictHostKeyChecking=no components/Dashboard/RecentFeed.tsx $user@$ip:$remote_path/components/Dashboard/RecentFeed.tsx
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Upload app/data/page.tsx
+spawn scp -o StrictHostKeyChecking=no app/data/page.tsx $user@$ip:$remote_path/app/data/page.tsx
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Rebuild and Restart
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+send "npm run build\r"
+expect "#"
+send "pm2 restart all\r"
+expect "#"
+send "exit\r"
+expect eof

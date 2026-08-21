@@ -1,0 +1,34 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set config_path "/etc/nginx/sites-available/default"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "echo '--- BACKING UP NGINX CONFIG ---'\r"
+# Avoiding $(date) expansion issues inside expect string
+send "cp $config_path ${config_path}.bak\r" 
+
+puts "--- UPDATING NGINX CONFIG ---"
+send "grep '/admin-db' $config_path && echo 'Config exists' || echo 'Config missing'\r"
+expect {
+    "Config exists" {
+        puls "--- CONFIG ALREADY EXISTS. CHECKING FOR ERRORS ---"
+    }
+    "Config missing" {
+        puts "--- CONFIG MISSING. WILL DISPLAY CONTENT ---"
+    }
+}
+
+send "cat $config_path\r"
+expect "#"
+send "exit\r"
+expect eof

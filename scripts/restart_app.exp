@@ -1,0 +1,29 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "echo '--- RESTARTING APP ---'\r"
+send "pm2 restart all\r" 
+# ID 3 was seen in the probe output for political-violence...
+
+expect {
+    "Use --update-env" { exp_continue }
+    "online" { }
+    timeout { puts "Restart timeout"; exit 1 }
+}
+
+expect "#"
+send "pm2 list\r"
+expect "#"
+send "exit\r"
+expect eof

@@ -1,0 +1,42 @@
+#!/usr/bin/expect
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+
+expect "#"
+send "cd /var/www/political_violence_tracker\r"
+
+expect "#"
+send "echo 'Stopping PM2...'\r"
+send "pm2 stop all\r"
+
+expect "#"
+send "echo 'Cleaning Cache...'\r"
+send "rm -rf .next\r"
+
+expect "#"
+send "echo 'Installing Dependencies...'\r"
+send "npm install\r"
+
+expect "#"
+send "echo 'Generating Prisma Client...'\r"
+send "npx prisma generate\r"
+
+expect "#"
+send "echo 'Building Next.js...'\r"
+send "npm run build\r"
+
+expect "#"
+send "echo 'Restarting PM2...'\r"
+send "pm2 restart all\r"
+
+expect "#"
+send "exit\r"
+expect eof

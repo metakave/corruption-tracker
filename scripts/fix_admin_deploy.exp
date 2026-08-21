@@ -1,0 +1,31 @@
+#!/usr/bin/expect
+set timeout 60
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect "password:"
+send "$password\r"
+expect "#"
+
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+puts "--- RESTARTING MAIN APP ---"
+send "pm2 delete all || true\r"
+expect "#"
+send "pm2 start npm --name 'political-violence-tracker' -- start\r"
+expect "#"
+
+puts "--- STARTING ADMIN DB (Prisma Studio) ---"
+# Start Prisma Studio on port 5555 (default)
+send "pm2 start npx --name 'pvt-admin' -- prisma studio --port 5555\r"
+expect "#"
+
+send "pm2 save\r"
+expect "#"
+
+send "echo '✅ ADMIN DB RESTORED'\r"
+send "exit\r"
+expect eof

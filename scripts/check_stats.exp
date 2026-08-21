@@ -1,0 +1,22 @@
+#!/usr/bin/expect
+
+set timeout 20
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set log_path "/var/www/political_violence_tracker/logs/scheduler.log"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+puts "--- CHECKING STATS ---"
+# Grep for lines like "✅ [Source]: Found X articles" or simple "Found X articles"
+send "grep -i 'Found' $log_path | tail -n 20\r"
+
+expect "#"
+send "exit\r"
+expect eof

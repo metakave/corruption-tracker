@@ -1,0 +1,62 @@
+
+#!/usr/bin/expect -f
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+# 1. Upload DB Fix Script
+spawn scp -o StrictHostKeyChecking=no scripts/cleanup_remote_db.ts $user@$ip:/var/www/political_violence_tracker/scripts/
+expect { "password:" { send "$password\r" } }
+expect eof
+
+# 2. Upload UI Changes (Feed Page, Component, Event Processor)
+spawn scp -o StrictHostKeyChecking=no app/feed/page.tsx components/Dashboard/RecentFeed.tsx lib/event-processor.ts $user@$ip:/var/www/political_violence_tracker/app/feed/
+# Note: scp to specific dirs requires multiple commands or zip. simplifying:
+spawn scp -o StrictHostKeyChecking=no app/feed/page.tsx $user@$ip:/var/www/political_violence_tracker/app/feed/
+expect { "password:" { send "$password\r" } }
+expect eof
+
+spawn scp -o StrictHostKeyChecking=no components/Dashboard/RecentFeed.tsx $user@$ip:/var/www/political_violence_tracker/components/Dashboard/
+expect { "password:" { send "$password\r" } }
+expect eof
+
+spawn scp -o StrictHostKeyChecking=no lib/event-processor.ts $user@$ip:/var/www/political_violence_tracker/lib/
+expect { "password:" { send "$password\r" } }
+expect eof
+
+# 3. Connect and Execute
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect { "password:" { send "$password\r" } }
+expect "root@"
+
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+# Run DB Cleanup
+send "echo '🧹 Running Source Cleanup...'\r"
+send "npx tsx scripts/cleanup_remote_db.ts\r"
+expect {
+    "Cleanup Complete" { send "echo '✅ DB Fixed'\r" }
+}
+expect "#"
+
+# Rebuild UI
+send "echo '🏗️  Rebuilding Next.js Application...'\r"
+send "npm run build\r"
+# Wait for build to finish (can take time)
+expect {
+    "Compiled successfully" {}
+    timeout { send "echo '⚠️ Build timed out waiting for output (but may still satisfy)'\r" }
+}
+expect "#"
+
+# Restart Server (Assuming PM2 'web' or 'next' or 'ecosystem')
+# Check pm2 list
+send "pm2 restart all\r"
+expect "#"
+
+send "echo '✅ Deployment and Fixes Complete.'\r"
+send "exit\r"
+expect eof

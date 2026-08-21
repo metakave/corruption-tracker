@@ -1,0 +1,38 @@
+#!/usr/bin/expect
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload updated lib/ai-analysis.ts
+spawn scp -o StrictHostKeyChecking=no lib/ai-analysis.ts $user@$ip:$remote_path/lib/ai-analysis.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Upload re-analysis script
+spawn scp -o StrictHostKeyChecking=no scripts/reanalyze_mismatched_dates.ts $user@$ip:$remote_path/scripts/reanalyze_mismatched_dates.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Build and Execute
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+send "npm run build\r"
+expect "#"
+send "pm2 restart all\r"
+expect "#"
+send "npx tsx scripts/reanalyze_mismatched_dates.ts\r"
+expect "#"
+send "exit\r"
+expect eof

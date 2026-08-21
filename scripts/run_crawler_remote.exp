@@ -1,0 +1,54 @@
+#!/usr/bin/expect
+
+set timeout 3600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+puts "--- UPLOADING LATEST SCRIPTS AND LIBS ---"
+# Creating a temporary tarball of relevant files
+exec tar -czf remote_update.tar.gz scripts/crawler.ts lib/event-processor.ts lib/ai-analysis.ts lib/scrapers/
+
+spawn scp -o StrictHostKeyChecking=no remote_update.tar.gz $user@$ip:$remote_path/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+puts "--- EXTRACTING FILES ON SERVER ---"
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect "password:"
+send "$password\r"
+expect "# "
+
+send "cd $remote_path\r"
+expect "# "
+send "tar -xzf remote_update.tar.gz\r"
+expect "# "
+send "rm remote_update.tar.gz\r"
+expect "# "
+
+# Ensure .env has the API keys
+puts "--- CHECKING .env FOR API KEYS ---"
+send "grep GEMINI_API_KEY_1 .env || echo 'GEMINI_API_KEY_1=\"AIzaSyCL8AXl_H8ujN4Wir_cTXYStUabaAMJbLw\"' >> .env\r"
+expect "# "
+send "grep GEMINI_API_KEY_2 .env || echo 'GEMINI_API_KEY_2=\"AIzaSyA_Vvz7o-4msm__DhD8vhd4fwhT-sAXNc0\"' >> .env\r"
+expect "# "
+send "grep GEMINI_API_KEY_3 .env || echo 'GEMINI_API_KEY_3=\"AIzaSyCr9hbBZwy4yCKRDr9mdZGCYFxkpXGCd5A\"' >> .env\r"
+expect "# "
+
+puts "\n🚀 STARTING CRAWLER RUN...\n"
+send "npx tsx scripts/crawler.ts\r"
+
+# Follow the output
+expect {
+    "Need to install the following packages" { send "y\r"; exp_continue }
+    -re "root@.*#" { }
+    timeout { puts "--- CRAWLER RUN EXCEEDED TIMEOUT ---"; exit 1 }
+    eof { }
+}
+
+puts "\n--- CRAWLER RUN FINISHED ---\n"
+send "exit\r"
+expect eof

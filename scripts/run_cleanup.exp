@@ -1,0 +1,66 @@
+#!/usr/bin/expect -f
+
+# Deploy and run cleanup pipeline on production server
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set dry_run [lindex $argv 0]
+
+if {$dry_run eq "--dry-run"} {
+    puts "\n🔒 DRY RUN MODE - No database changes will be made\n"
+} else {
+    puts "\n⚠️  LIVE MODE - Database will be updated\n"
+}
+
+# 1. Upload pipeline script
+puts "📤 Uploading cleanup pipeline..."
+spawn scp -o StrictHostKeyChecking=no scripts/cleanup_pipeline_v2.ts $user@$ip:/var/www/political_violence_tracker/scripts/
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+expect eof
+
+# 2. Execute pipeline
+puts "\n🚀 Running pipeline on server..."
+if {$dry_run eq "--dry-run"} {
+    spawn ssh -o StrictHostKeyChecking=no $user@$ip "cd /var/www/political_violence_tracker && npx tsx scripts/cleanup_pipeline_v2.ts --dry-run"
+} else {
+    spawn ssh -o StrictHostKeyChecking=no $user@$ip "cd /var/www/political_violence_tracker && npx tsx scripts/cleanup_pipeline_v2.ts"
+}
+
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+
+# Wait for completion
+expect {
+    "PIPELINE COMPLETE" {
+        puts "\n✅ Pipeline completed successfully"
+    }
+    "PIPELINE ERROR" {
+        puts "\n❌ Pipeline failed"
+        exit 1
+    }
+    timeout {
+        puts "\n⏱️  Pipeline timed out (may still be running)"
+    }
+}
+
+expect eof
+
+puts "\n📥 Downloading report files..."
+spawn scp -o StrictHostKeyChecking=no "$user@$ip:/var/www/political_violence_tracker/logs/pipeline_report_*.json" ./logs/
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+expect eof
+
+spawn scp -o StrictHostKeyChecking=no "$user@$ip:/var/www/political_violence_tracker/logs/review_queue_*.json" ./logs/
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+expect eof
+
+puts "\n✨ Done! Check ./logs/ for reports"

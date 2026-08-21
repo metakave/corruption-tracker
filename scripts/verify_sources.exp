@@ -1,0 +1,13 @@
+#!/usr/bin/expect
+
+set timeout 20
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip {cat /var/www/political_violence_tracker/scripts/crawler.ts | grep -A 12 "const scrapers = \["}
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof

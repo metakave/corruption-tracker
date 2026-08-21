@@ -1,0 +1,13 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+# Check if directories exist
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "ls -R /var/www/political_violence_tracker/app/admin-logs && ls -R /var/www/political_violence_tracker/app/api/admin"
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PVT Audit Logs (Monitor)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { gray: { 750: '#2d3748' } } } }
+        }
+    </script>
+    <style>
+        body { background-color: #111827; color: white; font-family: sans-serif; }
+        .loading { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    </style>
+</head>
+<body class="p-6">
+    <header class="mb-6 flex justify-between items-center sticky top-0 bg-gray-900 z-10 py-4 border-b border-gray-800">
+        <h1 class="text-2xl font-bold text-red-500">🛡️ PVT Audit Logs (Monitor)</h1>
+        <div class="flex gap-4 items-center">
+            <span id="count" class="text-gray-400 text-sm">0 entries</span>
+            <button onclick="fetchLogs()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm transition text-white">Refresh</button>
+            <a href="/" class="text-gray-400 hover:text-white px-4 py-2"> &larr; Back to Feed</a>
+        </div>
+    </header>
+
+    <div id="error" class="hidden text-red-400 bg-red-900/20 p-4 rounded border border-red-500 mb-4"></div>
+    <div id="loading" class="text-gray-400 text-center py-4">Loading logs...</div>
+
+    <div class="overflow-x-auto bg-gray-800 rounded-lg border border-gray-700">
+        <table class="w-full text-left border-collapse text-sm">
+            <thead>
+                <tr class="bg-gray-700 text-gray-300">
+                    <th class="p-3 border-b border-gray-600">Time</th>
+                    <th class="p-3 border-b border-gray-600">Verdict</th>
+                    <th class="p-3 border-b border-gray-600 w-1/4">Title</th>
+                    <th class="p-3 border-b border-gray-600 w-1/3">Reason</th>
+                    <th class="p-3 border-b border-gray-600">Source</th>
+                </tr>
+            </thead>
+            <tbody id="logs-body">
+                <!-- Logs will be injected here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Clean URL immediately
+        if (window.location.username || window.location.password) {
+            try {
+                const url = new URL(window.location.href);
+                url.username = '';
+                url.password = '';
+                window.history.replaceState({}, document.title, url.toString());
+            } catch(e) {}
+        }
+
+        async function fetchLogs() {
+            const tbody = document.getElementById('logs-body');
+            const loading = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const countSpan = document.getElementById('count');
+
+            loading.style.display = 'block';
+            errorDiv.classList.add('hidden');
+            
+            try {
+                // Use absolute URL to avoid credential issues
+                const apiUrl = window.location.protocol + '//' + window.location.host + '/api/admin/logs';
+                
+                const res = await fetch(apiUrl, { cache: 'no-store' });
+                if (!res.ok) throw new Error('Failed to fetch: ' + res.statusText);
+                
+                const data = await res.json();
+                const logs = data.logs || [];
+                
+                countSpan.innerText = logs.length + ' entries';
+                tbody.innerHTML = '';
+
+                logs.forEach(log => {
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-gray-700 border-b border-gray-700 last:border-0";
+                    
+                    // Safe parsing
+                    let dateStr = 'Invalid Date';
+                    try { dateStr = new Date(log.timestamp).toLocaleString(); } catch(e){}
+                    
+                    let domain = 'unknown';
+                    try { domain = new URL(log.url).hostname.replace('www.', ''); } catch(e){}
+
+                    let verdictClass = 'bg-gray-700 text-gray-300';
+                    if (log.verdict === 'VIOLENCE') verdictClass = 'bg-red-900 text-red-200';
+                    if (log.verdict === 'SKIPPED') verdictClass = 'bg-yellow-900 text-yellow-200';
+
+                    row.innerHTML = `
+                        <td class="p-3 text-gray-400 whitespace-nowrap">${dateStr}</td>
+                        <td class="p-3 font-semibold"><span class="px-2 py-1 rounded text-xs ${verdictClass}">${log.verdict || 'UNKNOWN'}</span></td>
+                        <td class="p-3 text-white font-medium"><a href="${log.url}" target="_blank" class="hover:underline">${log.title || 'No Title'}</a></td>
+                        <td class="p-3 text-gray-300 text-xs leading-relaxed">${log.reason || ''}</td>
+                        <td class="p-3 text-gray-400 text-xs">${domain}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+            } catch (err) {
+                errorDiv.innerText = err.message;
+                errorDiv.classList.remove('hidden');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Init
+        fetchLogs();
+        setInterval(fetchLogs, 30000);
+    </script>
+</body>
+</html>

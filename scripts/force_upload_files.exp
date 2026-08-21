@@ -1,0 +1,23 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_dir "/var/www/political_violence_tracker/lib/scrapers"
+
+# Upload jamuna.ts
+spawn scp -o StrictHostKeyChecking=no lib/scrapers/jamuna.ts $user@$ip:$remote_dir/jamuna.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Upload proxies.ts
+spawn scp -o StrictHostKeyChecking=no lib/scrapers/proxies.ts $user@$ip:$remote_dir/proxies.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+puts "--- UPLOAD COMPLETE ---"

@@ -1,0 +1,41 @@
+#!/usr/bin/expect
+
+set timeout 60
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+puts "\n📊 FETCHING DATABASE STATISTICS...\n"
+
+# 1. Total Raw Articles
+send "echo 'SELECT count(*) FROM \"RawNewsArticle\";' | npx prisma db execute --stdin --schema prisma/schema.prisma\r"
+expect "#"
+
+# 2. Articles Pending AI Analysis
+send "echo 'SELECT count(*) FROM \"RawNewsArticle\" WHERE \"isProcessed\" = false;' | npx prisma db execute --stdin --schema prisma/schema.prisma\r"
+expect "#"
+
+# 3. Processed Articles
+send "echo 'SELECT count(*) FROM \"RawNewsArticle\" WHERE \"isProcessed\" = true;' | npx prisma db execute --stdin --schema prisma/schema.prisma\r"
+expect "#"
+
+# 4. Total Political Events (AI Detected)
+send "echo 'SELECT count(*) FROM \"PoliticalEvent\";' | npx prisma db execute --stdin --schema prisma/schema.prisma\r"
+expect "#"
+
+# 5. Check Scraper Log for recent runs
+send "echo 'SELECT \"status\", \"totalArticles\", \"newArticles\", \"violenceDetected\", \"createdAt\" FROM \"ScraperLog\" ORDER BY \"createdAt\" DESC LIMIT 5;' | npx prisma db execute --stdin --schema prisma/schema.prisma\r"
+expect "#"
+
+puts "\n✅ Statistics fetch complete\n"
+send "exit\r"
+expect eof

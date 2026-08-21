@@ -1,0 +1,31 @@
+#!/usr/bin/expect
+
+set timeout 60
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set file_local "scripts/debug_jamuna_proxy.ts"
+set file_remote "/var/www/political_violence_tracker/scripts/debug_jamuna_proxy.ts"
+
+# Upload
+spawn scp -o StrictHostKeyChecking=no $file_local $user@$ip:$file_remote
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Run
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "/usr/bin/npx tsx $file_remote\r"
+expect {
+    "Need to install" { send "y\r"; exp_continue }
+    "Sample Cards" { expect "#" }
+    timeout { puts "TIMEOUT"; exit 1 }
+}
+send "exit\r"
+expect eof

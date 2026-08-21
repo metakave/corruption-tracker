@@ -1,0 +1,20 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "echo '--- RECENT 404 ERRORS ---'\r"
+# Get the last 20 404 errors from the access log
+send "grep ' 404 ' /var/log/nginx/access.log | tail -n 20\r"
+expect "#"
+send "exit\r"
+expect eof

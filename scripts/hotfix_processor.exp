@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+
+set timeout 60
+
+puts "🔥 Deploying Hotfix for event-processor.ts..."
+
+# 1. Upload File
+spawn scp -o StrictHostKeyChecking=no lib/event-processor.ts root@46.224.92.166:/var/www/political_violence_tracker/lib/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# 2. Restart Pipeline
+puts "🔄 Restarting AI Pipeline..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166 "pm2 restart ai-pipeline"
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+puts "✅ Hotfix Deployed & Pipeline Restarted."

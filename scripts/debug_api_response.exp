@@ -1,0 +1,13 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+# Verify API Response Size and Validity
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "curl -H 'Authorization: Basic YWRtaW46VlRyYWNrZXIyMDI2IQ==' http://localhost:3000/api/admin/logs > api_response.json && ls -lh api_response.json && head -c 500 api_response.json"
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof

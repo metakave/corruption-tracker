@@ -1,0 +1,42 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Create directory manually first just in case
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "mkdir -p $remote_path/app/api/admin/export\r"
+expect "#"
+send "exit\r"
+expect eof
+
+
+spawn scp -o StrictHostKeyChecking=no app/api/admin/export/route.ts $user@$ip:$remote_path/app/api/admin/export/route.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+spawn scp -o StrictHostKeyChecking=no app/admin-db/page.tsx $user@$ip:$remote_path/app/admin-db/page.tsx
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+# Rebuild Next.js app to register new route
+send "cd $remote_path && npm run build && pm2 restart all\r"
+expect "#"
+send "exit\r"
+expect eof

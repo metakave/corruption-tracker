@@ -1,0 +1,24 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+# Run a simple count script using prisma studio or a small script
+# We can hijack the existing scripts/cleanup_pipeline_v2.ts dry run again to seeing the count
+send "npx tsx scripts/cleanup_pipeline_v2.ts --dry-run\r"
+expect "#"
+
+puts "\n=== VERIFICATION COMPLETE ==="
+send "exit\r"
+expect eof

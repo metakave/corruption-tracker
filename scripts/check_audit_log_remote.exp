@@ -1,0 +1,14 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+# Execute - Check Ajker Patrika (Tail 2000 lines then grep)
+send_user "\n--- Ajker Patrika Log Search ---\n"
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "tail -n 2000 /var/www/political_violence_tracker/logs/audit_trail.csv | grep 'ajkerpatrika' | tail -n 10"
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof

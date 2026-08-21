@@ -1,0 +1,24 @@
+#!/usr/bin/expect -f
+set timeout -1
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set local_file "scripts/debug_event.ts"
+set dest_path "/var/www/political_violence_tracker/scripts/"
+
+spawn scp -o StrictHostKeyChecking=no $local_file $user@$ip:$dest_path
+expect {
+    -re "(?i)password:" {
+        send "$password\r"
+        exp_continue
+    }
+}
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "cd /var/www/political_violence_tracker && npx tsx scripts/debug_event.ts"
+expect {
+    -re "(?i)password:" {
+        send "$password\r"
+        exp_continue
+    }
+}
+expect eof

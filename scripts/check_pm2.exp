@@ -1,0 +1,13 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+# Verify PM2 status
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "pm2 list"
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof

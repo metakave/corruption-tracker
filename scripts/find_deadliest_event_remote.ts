@@ -1,0 +1,45 @@
+
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+async function main() {
+    console.log('Searching for REMOTE event...')
+
+    // Search for "Shariatpur" or relevant keywords in Bengali
+
+    const events = await prisma.politicalEvent.findMany({
+        where: {
+            OR: [
+                { title: { contains: 'Shariatpur', mode: 'insensitive' } },
+                { title: { contains: 'শরীয়তপুর' } },
+                { district: { contains: 'Shariatpur', mode: 'insensitive' } }
+            ]
+        },
+        take: 5,
+        orderBy: { publishedAt: 'desc' },
+        select: {
+            id: true,
+            title: true,
+            killed: true,
+            injured: true,
+            url: true,
+            summary: true,
+            publishedAt: true
+        }
+    })
+
+    console.log(`Found ${events.length} REMOTE events matching 'Shariatpur'.`)
+
+    events.forEach(e => {
+        console.log(`\nID: ${e.id}`)
+        console.log(`Title: ${e.title}`)
+        console.log(`Killed: ${e.killed}, Injured: ${e.injured}`)
+        console.log(`URL: ${e.url}`)
+        console.log(`Summary: ${e.summary}`)
+    })
+}
+
+main()
+    .catch(e => console.error(e))
+    .finally(async () => await prisma.$disconnect())

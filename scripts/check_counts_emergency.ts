@@ -1,0 +1,1 @@
+import { PrismaClient } from '@prisma/client'; const prisma = new PrismaClient(); async function main() { const raw = await prisma.rawNewsArticle.count(); const events = await prisma.politicalEvent.count(); console.log('RAW_COUNT: ' + raw); console.log('EVENT_COUNT: ' + events); } main();

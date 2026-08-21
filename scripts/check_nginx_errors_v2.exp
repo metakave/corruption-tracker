@@ -1,0 +1,31 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "export PAGER=cat\r"
+expect "#"
+
+send "echo '--- TESTING LOCALHOST /admin-db/ ---'\r"
+send "curl -I http://localhost:3000/admin-db/\r"
+expect "#"
+
+send "echo '--- NGINX ERROR LOG ---'\r"
+send "tail -n 20 /var/log/nginx/error.log\r"
+expect "#"
+
+send "echo '--- CHECKING NGINX STATUS ---'\r"
+send "systemctl status nginx --no-pager\r"
+expect "#"
+
+send "exit\r"
+expect eof

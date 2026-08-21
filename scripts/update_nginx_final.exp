@@ -1,0 +1,58 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set config_path "/etc/nginx/sites-available/default"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+puts "--- INJECTING API LOCATION BLOCK ---"
+
+# We use a temp file to construct the new config
+send "cp $config_path ${config_path}.bak.final\r"
+
+# We want to insert 'location = /api' before 'location / {'
+# We can use sed to match 'location / {' and insert before it.
+
+set locations {
+    # Prisma Studio Main API Endpoint
+    location = /api {
+        proxy_pass http://localhost:5555/api;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+    }
+}
+
+# Escape newlines for sed
+# Actually, creating a separate file and using cat >> is hard with insertion.
+# Let's overwrite the file with a known good config if possible, OR just search/replace.
+# The 'http' location block exists. Let's insert after that.
+
+send "sed -i '/location \\/http\\/ {/i \\    location = /api {\\n        proxy_pass http://localhost:5555/api;\\n        proxy_http_version 1.1;\\n        proxy_set_header Upgrade \$http_upgrade;\\n        proxy_set_header Connection \"upgrade\";\\n        proxy_set_header Host \$host;\\n    }\\n' $config_path\r"
+
+puts "--- TESTING CONFIG ---"
+send "nginx -t\r"
+
+expect {
+    "successful" {
+        puts "--- RELOADING NGINX ---"
+        send "systemctl reload nginx\r"
+    }
+    "failed" {
+        puts "--- CONFIG FAILED. REVERTING ---"
+        send "cp ${config_path}.bak.final $config_path\r"
+    }
+}
+
+expect "#"
+send "exit\r"
+expect eof

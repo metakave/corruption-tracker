@@ -1,0 +1,53 @@
+#!/usr/bin/expect -f
+# Live Log Monitor for Production Server
+# Usage: expect scripts/monitor_logs.exp
+
+set timeout -1
+
+puts "\n🔍 CONNECTING TO PRODUCTION SERVER...\n"
+
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "~#"
+puts "\n✅ Connected to production server\n"
+puts "📊 LIVE LOG MONITOR - Press Ctrl+C to exit\n"
+puts "═══════════════════════════════════════════════════════════\n"
+
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+# Show current time
+send "echo '⏰ Server Time (UTC):' && date -u '+%Y-%m-%d %H:%M:%S'\r"
+expect "#"
+send "echo '⏰ Bangladesh Time:' && TZ='Asia/Dhaka' date '+%Y-%m-%d %H:%M:%S'\r"
+expect "#"
+send "echo ''\r"
+expect "#"
+
+# Show cron schedule
+send "echo '📅 SCHEDULED SCRAPER TIMES:'\r"
+expect "#"
+send "crontab -l | grep scheduler | head -2\r"
+expect "#"
+send "echo ''\r"
+expect "#"
+
+# Show last 30 lines of scheduler log
+send "echo '📝 LAST 30 LOG ENTRIES:'\r"
+expect "#"
+send "tail -30 logs/scheduler.log 2>/dev/null || echo 'No scheduler.log found'\r"
+expect "#"
+send "echo ''\r"
+expect "#"
+
+# Start live tail
+send "echo '🔴 LIVE LOG STREAM (tail -f):'\r"
+expect "#"
+send "echo '═══════════════════════════════════════════════════════════'\r"
+expect "#"
+send "tail -f logs/scheduler.log\r"
+
+# This will run indefinitely until user presses Ctrl+C
+expect eof

@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+
+puts "📄 Checking Crawler Log..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "tail -n 50 /var/www/political_violence_tracker/logs/scheduler.log\r"
+
+expect "root@"
+send "exit\r"
+expect eof

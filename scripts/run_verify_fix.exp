@@ -1,0 +1,22 @@
+#!/usr/bin/expect
+
+set timeout 60
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set script_local "scripts/verify_processor_fix.ts"
+set script_remote "/var/www/political_violence_tracker/scripts/verify_processor_fix.ts"
+
+# 1. Upload
+spawn scp -o StrictHostKeyChecking=no $script_local $user@$ip:$script_remote
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# 2. Execute
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "cd /var/www/political_violence_tracker && npx tsx scripts/verify_processor_fix.ts"
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof

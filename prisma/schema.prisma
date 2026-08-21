@@ -1,0 +1,113 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model CorruptionEvent {
+  id                     String    @id @default(uuid())
+  title                  String
+  url                    String    @unique
+  source                 String    @default("Prothom Alo")
+  additionalSources      String?
+  publishedAt            DateTime
+  dateOfIncident         DateTime?
+  locationText           String?
+  district               String?
+  latitude               Float?
+  longitude              Float?
+  accusedEntities        String?   // JSON array of names/designations/orgs
+  sectorOrMinistry       String?   // Ministry/Sector (Health, Banking, Roads, Land, etc.)
+  amountInvolved         Float?    // Numeric amount in BDT (converted to Crores for stats)
+  amountFormatted        String?   // Display string e.g. "৳৫০ কোটি"
+  investigatingAgency    String?   // ACC / দুদক, CID, BFIU, Court, etc.
+  legalStatus            String?   @default("allegation") // allegation, inquiry, chargesheet, trial, convicted, etc.
+  summary                String?
+  severityScore          Int?      // 1-10 scale
+  confidence             Float?
+  tags                   String?   // JSON array
+  category               String?   @default("other") // embezzlement, bribery, money_laundering, tender_fraud, loan_scam, illegal_wealth, abuse_of_power
+  images                 String?
+  rawText                String?
+  isBangladesh           Boolean   @default(true)
+  isCorruption           Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  socialMediaPosts SocialMediaPost[]
+}
+
+model RawNewsArticle {
+  id          Int      @id @default(autoincrement())
+  url         String   @unique
+  title       String
+  content     String
+  publishedAt DateTime
+  scrapedAt   DateTime @default(now())
+  isProcessed Boolean  @default(false)
+  source      String   @default("Unknown")
+}
+
+model ScraperLog {
+  id                 Int       @id @default(autoincrement())
+  runId              String    @unique
+  startTime          DateTime
+  endTime            DateTime?
+  status             String
+  sourcesScraped     String?
+  totalArticles      Int       @default(0)
+  newArticles        Int       @default(0)
+  duplicates         Int       @default(0)
+  corruptionDetected Int       @default(0)
+  errors             String?
+  createdAt          DateTime  @default(now())
+}
+
+enum PostStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  POSTED
+  FAILED
+  SCHEDULED
+}
+
+model SocialMediaPost {
+  id      String          @id @default(cuid())
+  eventId String
+  event   CorruptionEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // Content
+  photocardUrl String
+  caption      String @db.Text
+  theme        String @default("classic")
+
+  // Workflow
+  status PostStatus @default(PENDING)
+
+  // Timestamps
+  createdAt    DateTime  @default(now())
+  reviewedAt   DateTime?
+  reviewedBy   String?
+  scheduledFor DateTime?
+  postedAt     DateTime?
+
+  // Facebook
+  facebookPostId String?
+  facebookUrl    String?
+
+  // Analytics
+  likes    Int @default(0)
+  shares   Int @default(0)
+  comments Int @default(0)
+  reach    Int @default(0)
+
+  @@index([eventId])
+  @@index([status])
+  @@index([createdAt])
+}

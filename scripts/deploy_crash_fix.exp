@@ -1,0 +1,44 @@
+#!/usr/bin/expect
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload Map.tsx and utils.ts
+spawn scp -o StrictHostKeyChecking=no components/Map.tsx lib/utils.ts $user@$ip:$remote_path/
+# Wait, paths need to be correct on remote
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Move files to correct location (scp goes to ~ usually if not specified full path, but here we can try direct)
+# Let's do direct scp to full path
+spawn scp -o StrictHostKeyChecking=no components/Map.tsx $user@$ip:$remote_path/components/Map.tsx
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+spawn scp -o StrictHostKeyChecking=no lib/utils.ts $user@$ip:$remote_path/lib/utils.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Rebuild
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+send "npm run build\r"
+expect "#"
+send "pm2 restart all\r"
+expect "#"
+send "exit\r"
+expect eof

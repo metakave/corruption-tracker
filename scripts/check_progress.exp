@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+
+puts "📡 Connecting to check progress..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "echo 'Current Time:' && date\r"
+send "pm2 logs ai-pipeline --lines 50 --nostream\r"
+
+expect "root@"
+send "exit\r"
+expect eof

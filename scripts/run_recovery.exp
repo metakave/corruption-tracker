@@ -1,0 +1,25 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+
+puts "🚀 Uploading recovery script..."
+spawn scp -o StrictHostKeyChecking=no scripts/recover_data.ts root@46.224.92.166:/var/www/political_violence_tracker/scripts/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+puts "🚑 Executing Recovery..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "cd /var/www/political_violence_tracker && npx tsx scripts/recover_data.ts\r"
+expect "RECOVERY COMPLETE"
+
+expect "root@"
+send "echo '--- RECOVERY DONE ---'\r"
+
+expect "root@"
+send "exit\r"
+expect eof

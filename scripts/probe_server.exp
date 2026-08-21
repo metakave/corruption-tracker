@@ -1,0 +1,30 @@
+#!/usr/bin/expect
+
+set timeout 20
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh $user@$ip
+
+expect {
+    "yes/no" {
+        send "yes\r"
+        exp_continue
+    }
+    "password:" {
+        send "$password\r"
+    }
+}
+
+expect "#"
+send "echo '--- PROBE START ---'\r"
+send "pwd\r"
+send "ls -F\r"
+send "pm2 list\r"
+send "ps aux | grep next\r"
+send "find / -name package.json -type f -maxdepth 4 2>/dev/null | grep political\r"
+send "echo '--- PROBE END ---'\r"
+send "exit\r"
+
+expect eof

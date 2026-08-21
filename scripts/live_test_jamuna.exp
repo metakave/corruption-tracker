@@ -1,0 +1,36 @@
+#!/usr/bin/expect
+
+set timeout 180
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+puts "\n🔥 RUNNING LIVE JAMUNA TEST ON PRODUCTION...\n"
+
+send "npx tsx -e \"import { JamunaScraper } from './lib/scrapers/jamuna.js'; const s = new JamunaScraper(); s.scrape().then(articles => { console.log('\\n✅ SUCCESS! Jamuna found', articles.length, 'articles'); console.log('Sample:', articles.slice(0,3).map(a => a.title)); process.exit(0); }).catch(e => { console.error('❌ Error:', e.message); process.exit(1); });\"\r"
+
+expect {
+    "SUCCESS!" {
+        puts "\n✅ JAMUNA IS WORKING ON PRODUCTION!\n"
+        expect "#"
+    }
+    "Error:" {
+        puts "\n⚠️ Issue detected\n"
+        expect "#"
+    }
+    timeout {
+        puts "\n⏱️ Test timed out (likely still running)\n"
+    }
+}
+
+send "exit\r"
+expect eof

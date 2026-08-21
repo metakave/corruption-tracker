@@ -1,0 +1,46 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload PM2 ecosystem config
+spawn scp -o StrictHostKeyChecking=no ecosystem.config.js $user@$ip:$remote_path/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Upload updated files
+spawn scp -o StrictHostKeyChecking=no lib/utils.ts context/LanguageContext.tsx $user@$ip:$remote_path/lib/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+spawn scp -o StrictHostKeyChecking=no context/LanguageContext.tsx $user@$ip:$remote_path/context/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Set up PM2 with new cron schedule
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+send "pm2 delete all\r"
+expect "#"
+send "pm2 start ecosystem.config.js\r"
+expect "#"
+send "pm2 save\r"
+expect "#"
+send "pm2 logs --lines 20 --nostream\r"
+expect "#"
+send "exit\r"
+expect eof

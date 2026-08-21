@@ -1,0 +1,24 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+
+puts "🚀 Uploading fix V2 script to production..."
+spawn scp -o StrictHostKeyChecking=no scripts/fix_db_remote_v2.ts root@46.224.92.166:/var/www/political_violence_tracker/scripts/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+puts "🛠️  Running fix V2 on server..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+
+expect "#"
+send "npx tsx scripts/fix_db_remote_v2.ts\r"
+
+expect "#"
+send "exit\r"
+expect eof

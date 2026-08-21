@@ -1,0 +1,50 @@
+#!/usr/bin/expect -f
+
+set timeout 20
+set host "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set local_port 5433
+set remote_port 5432
+
+# -N: Do not execute a remote command (just forward ports)
+# -o ServerAliveInterval=60: Keep connection alive
+spawn ssh -N -L $local_port:localhost:$remote_port -o ServerAliveInterval=60 $user@$host
+
+expect {
+    "yes/no" {
+        send "yes\r"
+        exp_continue
+    }
+    "password:" {
+        send "$password\r"
+        # After password, with -N, it will just sit there silent if successful.
+        # If failure, it will print "Permission denied".
+    }
+    timeout {
+        puts "Timeout waiting for prompts"
+        exit 1
+    }
+}
+
+# Wait for a "Permission denied" or just hang around if successful.
+# We expect NO output if successful (since -N).
+# So we wait and hope it doesn't die.
+expect {
+    "Permission denied" {
+        puts "Authentication Failed"
+        exit 1
+    }
+    timeout {
+        # This is actually GOOD for -N. It means no error.
+        puts "Tunnel (likely) Established! Keeping alive..."
+        # Loop forever
+        while {1} {
+            sleep 60
+        }
+    }
+    eof {
+        puts "SSH Connection Closed"
+        exit 1
+    }
+}

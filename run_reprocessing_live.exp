@@ -1,0 +1,51 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+puts "\nð¤ Uploading reprocessing script...\n"
+
+# Upload the script
+spawn scp -o StrictHostKeyChecking=no scripts/reprocess_failed_articles.ts root@46.224.92.166:/var/www/political_violence_tracker/scripts/
+expect {
+    -re "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}
+
+puts "\n✅ Script deployed!\n"
+puts "ð Running reprocessing live on production server...\n"
+puts "="
+puts "=" * 60
+puts "\n"
+
+# Connect and run the script directly (not with PM2)
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect {
+    -re "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "# " {}
+}
+
+send "cd /var/www/political_violence_tracker\r"
+expect "# "
+
+# Run directly with npx tsx to see live output
+send "npx tsx scripts/reprocess_failed_articles.ts\r"
+
+# Keep showing output until script completes
+expect {
+    "# " {
+        puts "\n\n✅ Reprocessing completed!\n"
+    }
+    timeout {
+        puts "\nScript still running...\n"
+    }
+}
+
+send "exit\r"
+expect eof

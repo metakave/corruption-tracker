@@ -1,0 +1,21 @@
+#!/usr/bin/expect
+
+# Monitor for 1 hour (3600 seconds)
+set timeout 3600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set log_path "/var/www/political_violence_tracker/logs/scheduler.log"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+puts "--- 🔴 LIVE CRAWL MONITOR (Press Ctrl+C to stop) ---"
+send "tail -f $log_path\r"
+
+# Wait for timeout (1 hour) or user interruption
+expect timeout

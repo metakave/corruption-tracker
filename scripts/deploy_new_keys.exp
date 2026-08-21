@@ -1,0 +1,61 @@
+#!/usr/bin/expect
+
+set timeout 60
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# New Keys
+set key4 "AIzaSyCGvjGn8451yoms94XQP-QYz5LILP6BXQY"
+set key5 "AIzaSyA9WSYCDcrQH59BN3yc2CDMXpZdhuv2lLA"
+
+# SSH to server
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+# Update .env file
+# We use sed to append or update if exists, but joining them simply at the end is safer if we don't know the exact current state
+send "cd $remote_path\r"
+expect "#"
+
+# Append key 4
+send "grep -q 'GEMINI_API_KEY_4' .env || echo 'GEMINI_API_KEY_4=$key4' >> .env\r"
+expect "#"
+# Update key 4 in case it was different
+send "sed -i 's/^GEMINI_API_KEY_4=.*/GEMINI_API_KEY_4=$key4/' .env\r"
+expect "#"
+
+# Append key 5
+send "grep -q 'GEMINI_API_KEY_5' .env || echo 'GEMINI_API_KEY_5=$key5' >> .env\r"
+expect "#"
+# Update key 5 in case it was different
+send "sed -i 's/^GEMINI_API_KEY_5=.*/GEMINI_API_KEY_5=$key5/' .env\r"
+expect "#"
+
+send "exit\r"
+expect eof
+
+# Now deploy the code change and restart
+spawn scp -o StrictHostKeyChecking=no lib/ai-analysis.ts $user@$ip:$remote_path/lib/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+send "pm2 restart reprocess-job\r"
+expect "#"
+send "pm2 logs reprocess-job --lines 20 --nostream\r"
+expect "#"
+send "exit\r"
+expect eof

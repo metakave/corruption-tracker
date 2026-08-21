@@ -1,0 +1,28 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+spawn scp -o StrictHostKeyChecking=no update_backend.tar.gz $user@$ip:$remote_path/update_backend.tar.gz
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "cd $remote_path\r"
+send "tar -xzf update_backend.tar.gz\r"
+# No need to rebuild for backend scripts unless they are compiled to JS. 
+# Since we use tsx, just syncing TS files is enough.
+
+puts "--- SYNC COMPLETE ---"
+send "exit\r"
+expect eof

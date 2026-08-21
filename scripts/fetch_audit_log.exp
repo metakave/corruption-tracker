@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+set timeout -1
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set audit_log "/var/www/political_violence_tracker/logs/audit_trail.csv"
+
+spawn scp -o StrictHostKeyChecking=no $user@$ip:$audit_log ./audit_trail_prod.csv
+expect {
+    -re "(?i)password:" {
+        send "$password\r"
+        exp_continue
+    }
+}
+expect eof

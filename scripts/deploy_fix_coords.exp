@@ -1,0 +1,34 @@
+#!/usr/bin/expect
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload lib/geocoding.ts
+spawn scp -o StrictHostKeyChecking=no lib/geocoding.ts $user@$ip:$remote_path/lib/geocoding.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Upload fix script
+spawn scp -o StrictHostKeyChecking=no scripts/fix_coordinates.ts $user@$ip:$remote_path/scripts/fix_coordinates.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Execute Fix
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+send "npx tsx scripts/fix_coordinates.ts\r"
+expect "#"
+send "exit\r"
+expect eof

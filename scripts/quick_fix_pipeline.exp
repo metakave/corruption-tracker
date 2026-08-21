@@ -1,0 +1,36 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+
+# 1. Upload package.json
+puts "🚀 Uploading package.json..."
+spawn scp -o StrictHostKeyChecking=no package.json root@46.224.92.166:/var/www/political_violence_tracker/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# 2. SSH and restart pipeline
+puts "🔄 Restarting pipeline..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+
+expect "#"
+send "pm2 delete ai-pipeline || true\r"
+
+expect "#"
+send "pm2 start npm --name 'ai-pipeline' -- run pipeline\r"
+
+expect "#"
+send "pm2 save\r"
+
+expect "#"
+send "echo '--- LOGS ---'\r"
+send "pm2 logs ai-pipeline --lines 50 --nostream\r"
+
+expect "#"
+send "exit\r"
+expect eof

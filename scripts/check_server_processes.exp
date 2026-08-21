@@ -1,0 +1,14 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect "root@"
+send "ps aux | grep -E 'next|node|pm2'\r"
+expect "root@"
+send "pm2 status\r"
+expect "root@"
+send "cat /var/www/political_violence_tracker/lib/utils.ts\r"
+expect "root@"
+send "exit\r"
+expect eof

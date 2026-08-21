@@ -1,0 +1,31 @@
+#!/usr/bin/expect
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload updated reprocess script
+spawn scp -o StrictHostKeyChecking=no scripts/reprocess_all_raw.ts $user@$ip:$remote_path/scripts/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Start the reprocess job
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+send "pm2 delete reprocess-job 2>/dev/null || true\r"
+expect "#"
+send "pm2 start npx --name reprocess-job -- tsx scripts/reprocess_all_raw.ts\r"
+expect "#"
+send "pm2 logs reprocess-job --lines 30 --nostream\r"
+expect "#"
+send "exit\r"
+expect eof

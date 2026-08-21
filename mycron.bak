@@ -1,0 +1,1 @@
+0 */6 * * * cd /Users/musfiqurtuhin/Documents/workspace/political_violence_tracker && /Users/musfiqurtuhin/Documents/workspace/political_violence_tracker/node_modules/.bin/tsx scripts/crawler.ts >> /Users/musfiqurtuhin/Documents/workspace/political_violence_tracker/crawler_cron.log 2>&1

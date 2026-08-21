@@ -1,0 +1,29 @@
+#!/usr/bin/expect
+
+set timeout 60
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+set local_file "scripts/inspect_raw_url.ts"
+set remote_file "$remote_path/scripts/inspect_raw_url.ts"
+
+# Upload
+spawn scp -o StrictHostKeyChecking=no $local_file $user@$ip:$remote_file
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Execute
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect "password:"
+send "$password\r"
+expect "#"
+
+send "cd $remote_path\r"
+send "npx tsx scripts/inspect_raw_url.ts\r"
+expect "#"
+
+send "exit\r"
+expect eof

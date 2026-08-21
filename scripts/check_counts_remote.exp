@@ -1,0 +1,19 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+
+puts "🔍 Checking DB Counts (Fixed Path)..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+# Change to the correct directory first
+send "cd /var/www/political_violence_tracker\r"
+# Then create and run the script
+send "echo \"import { PrismaClient } from '@prisma/client'; const prisma = new PrismaClient(); async function main() { const raw = await prisma.rawNewsArticle.count(); const events = await prisma.politicalEvent.count(); console.log('RAW_COUNT: ' + raw); console.log('EVENT_COUNT: ' + events); } main();\" > scripts/check_counts_emergency.ts\r"
+send "npx tsx scripts/check_counts_emergency.ts\r"
+
+expect "root@"
+send "exit\r"
+expect eof

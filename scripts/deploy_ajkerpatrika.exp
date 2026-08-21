@@ -1,0 +1,52 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload updated scraper file
+spawn scp -o StrictHostKeyChecking=no lib/scrapers/ajkerpatrika.ts $user@$ip:$remote_path/lib/scrapers/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Upload test script
+spawn scp -o StrictHostKeyChecking=no scripts/count_ajkerpatrika.ts $user@$ip:$remote_path/scripts/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# SSH and run test
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "cd $remote_path\r"
+expect "#"
+
+puts "\n🧪 TESTING AJKER PATRIKA ON PRODUCTION...\n"
+
+send "npx tsx scripts/count_ajkerpatrika.ts\r"
+expect {
+    "AJKER_PATRIKA_COUNT:" {
+        puts "\n✅ TEST SUCCESSFUL!\n"
+        expect "#"
+    }
+    "Error:" {
+        puts "\n⚠️ Test encountered an error\n"
+        expect "#"
+    }
+    timeout {
+        puts "\n⏱️ Test timeout (still running)\n"
+    }
+}
+
+puts "\n=== DEPLOYMENT COMPLETE ==="
+send "exit\r"
+expect eof

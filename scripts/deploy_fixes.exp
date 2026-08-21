@@ -1,0 +1,29 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set path_remote "/var/www/political_violence_tracker"
+
+# 1. Upload lib/event-processor.ts
+spawn scp -o StrictHostKeyChecking=no lib/event-processor.ts $user@$ip:$path_remote/lib/event-processor.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# 2. Upload lib/scrapers/samakal.ts
+spawn scp -o StrictHostKeyChecking=no lib/scrapers/samakal.ts $user@$ip:$path_remote/lib/scrapers/samakal.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# 3. Build/Restart (if typescript needs compilation or just running tsx)
+# If using tsx/ts-node, no build needed. But if running via PM2 with build, we might need to rebuild.
+# The user's workflow seems to be TSX based on "npx tsx scripts/crawler.ts" in the crawler file.
+# But "deploy_frontend.exp" suggests a build. The crawler likely runs from source via tsx in the cron?
+# The logs generally show "npx tsx scripts/crawler.ts".
+
+send_user "\n✅ Files uploaded successfully.\n"

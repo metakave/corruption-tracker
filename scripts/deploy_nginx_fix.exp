@@ -1,0 +1,28 @@
+#!/usr/bin/expect
+
+set timeout 90
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# 1. Update Nginx Config
+spawn scp -o StrictHostKeyChecking=no nginx_violencetracker.conf $user@$ip:/etc/nginx/sites-available/default
+expect "password:" { send "$password\r" }
+expect eof
+
+# 2. Upload UI pages
+spawn scp -o StrictHostKeyChecking=no app/admin-db/page.tsx $user@$ip:$remote_path/app/admin-db/page.tsx
+expect "password:" { send "$password\r" }
+expect eof
+
+# 3. Reload Nginx and Build App
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect "password:" { send "$password\r" }
+expect "#"
+send "nginx -t && systemctl reload nginx\r"
+expect "#"
+send "cd $remote_path && npm run build && pm2 restart all\r"
+expect "#"
+send "exit\r"
+expect eof

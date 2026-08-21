@@ -1,0 +1,33 @@
+#!/usr/bin/expect -f
+
+set timeout 3600
+
+# 1. Upload libraries (scrapers are in lib/scrapers)
+puts "🚀 Uploading updated scrapers..."
+spawn scp -o StrictHostKeyChecking=no -r lib/scrapers root@46.224.92.166:/var/www/political_violence_tracker/lib/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# 2. Upload script
+puts "🚀 Uploading Deep Recovery script..."
+spawn scp -o StrictHostKeyChecking=no scripts/deep_recovery.ts root@46.224.92.166:/var/www/political_violence_tracker/scripts/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# 3. Run Recovery
+puts "🌊 Executing Deep Recovery (This may take a while)..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+# Install dependencies if new (unlikely) or just run
+send "npx tsx scripts/deep_recovery.ts\r"
+
+# Wait for completion (timeout is high)
+expect "DEEP RECOVERY COMPLETE"
+send "exit\r"
+expect eof

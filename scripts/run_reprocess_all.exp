@@ -1,0 +1,21 @@
+
+#!/usr/bin/expect -f
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+# 1. Upload Library Change (Event Processor + Geocoding)
+spawn scp -o StrictHostKeyChecking=no lib/event-processor.ts lib/geocoding.ts $user@$ip:/var/www/political_violence_tracker/lib/
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+expect eof
+
+# 2. Upload Reprocess Script
+spawn scp -o StrictHostKeyChecking=no scripts/reprocess_all_raw.ts $user@$ip:/var/www/political_violence_tracker/scripts/
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+expect eof

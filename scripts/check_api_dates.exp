@@ -1,0 +1,12 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "curl -s http://localhost:3000/api/events | grep -o 'dateOfIncident.....\[^,\]*' | head -n 10"
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof

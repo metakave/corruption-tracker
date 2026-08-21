@@ -1,0 +1,31 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "echo '--- PM2 LOGS ---'\r"
+send "pm2 logs political-violence --lines 50 --no-daemon\r"
+# Wait a bit for logs to appear
+sleep 5
+send "\x03"
+expect "#"
+
+send "echo '--- NGINX CONFIG ---'\r"
+send "cat /etc/nginx/sites-enabled/default\r"
+expect "#"
+
+send "echo '--- TESTING LOCALHOST ---'\r"
+send "curl -I http://localhost:3000\r"
+expect "#"
+
+send "exit\r"
+expect eof

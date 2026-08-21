@@ -1,0 +1,29 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload lib/ai-analysis.ts
+spawn scp -o StrictHostKeyChecking=no lib/ai-analysis.ts $user@$ip:$remote_path/lib/ai-analysis.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Rebuild (necessary because this file is baked into the build)
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+send "npm run build\r"
+expect "#"
+send "pm2 restart all\r"
+expect "#"
+send "exit\r"
+expect eof

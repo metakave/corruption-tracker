@@ -1,0 +1,31 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+
+# 1. Upload JSON
+puts "🚀 Uploading backup JSON..."
+spawn scp -o StrictHostKeyChecking=no restored_data.json root@46.224.92.166:/var/www/political_violence_tracker/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# 2. Upload Restore Script
+puts "🚀 Uploading restore script..."
+spawn scp -o StrictHostKeyChecking=no scripts/restore_from_json.ts root@46.224.92.166:/var/www/political_violence_tracker/scripts/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# 3. Run Restoration
+puts "♻️ Executing Restore..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "cd /var/www/political_violence_tracker && npx tsx scripts/restore_from_json.ts\r"
+
+expect "root@"
+send "echo '--- RESTORE DONE ---'\r"
+send "exit\r"
+expect eof

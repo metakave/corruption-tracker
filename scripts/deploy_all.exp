@@ -1,0 +1,59 @@
+#!/usr/bin/expect -f
+
+# Comprehensive Deployment Script for Political Violence Tracker
+# Syncs all core library files and processing scripts to the production server
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set dest_path "/var/www/political_violence_tracker"
+
+puts "🚀 Starting Full Deployment to $ip..."
+
+# 1. Sync Library Files
+puts "\n📦 Syncing Library Files..."
+spawn scp -o StrictHostKeyChecking=no lib/event-processor.ts lib/geocoding.ts lib/ai-analysis.ts $user@$ip:$dest_path/lib/
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+expect eof
+
+# 2. Sync Processing Scripts
+puts "\n📜 Syncing Processing Scripts..."
+spawn scp -o StrictHostKeyChecking=no scripts/reprocess_all_raw.ts scripts/cleanup_pipeline_v2.ts scripts/update_existing_events.ts $user@$ip:$dest_path/scripts/
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+expect eof
+
+# 3. Sync Frontend Components & Utils
+puts "\n🎨 Syncing UI Components..."
+spawn scp -o StrictHostKeyChecking=no components/Dashboard/RecentFeed.tsx components/Map.tsx components/StatsPanel.tsx $user@$ip:$dest_path/components/
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+expect eof
+
+spawn scp -o StrictHostKeyChecking=no app/events/\[id\]/page.tsx app/data/page.tsx $user@$ip:$dest_path/app/
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+expect eof
+
+spawn scp -o StrictHostKeyChecking=no lib/utils.ts $user@$ip:$dest_path/lib/
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+expect eof
+
+# 4. Quick Verify (Check if files arrived)
+puts "\n🔍 Verifying deployment..."
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "ls -l $dest_path/components/Dashboard/RecentFeed.tsx $dest_path/app/events/\[id\]/page.tsx"
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+expect eof
+
+puts "\n✅ DEPLOYMENT COMPLETE!"
+puts "All latest geocoding, AI logic, and cleanup tools are now on the server."

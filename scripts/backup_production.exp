@@ -1,0 +1,33 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+set timestamp [clock format [clock seconds] -format {%Y%m%d_%H%M%S}]
+set remote_file "/tmp/db_backup_$timestamp.sql"
+set local_file "./backups/prod_backup_$timestamp.sql"
+
+# Create backups dir if not exists (locally)
+exec mkdir -p ./backups
+
+puts "📦 Creating backup of Production Database..."
+
+# 1. SSH and Dump
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166 "sudo -u postgres pg_dump political_violence > $remote_file"
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# 2. Download
+puts "⬇️ Downloading backup..."
+spawn scp -o StrictHostKeyChecking=no root@46.224.92.166:$remote_file $local_file
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# 3. Cleanup Remote
+puts "🧹 Cleaning up remote..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166 "rm $remote_file"
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+puts "✅ Backup saved to: $local_file"

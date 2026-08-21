@@ -1,0 +1,112 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/.next.backup/
+/out/
+/standalone_new/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files — never commit secrets
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+/app/generated/prisma
+
+# macOS resource forks & extended attributes
+._*
+._.DS_Store
+
+# logs
+*.log
+logs/
+
+# large binaries & archives
+*.tar.gz
+*.tar
+*.zip
+next_build_part_*
+*.akbwCKaYjY
+full_app_deploy.tar.gz
+remote_deploy.tar.gz
+next_build_reassembled.tar.gz
+deploy_*.tar.gz
+deploy_pack.tar.gz
+deploy_package.tar.gz
+update_*.tar.gz
+
+# data files — too large for git
+*.csv
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!components.json
+!next-sitemap.config.js
+
+# sqlite dev db & database dumps
+dev.db
+*.db
+*.dump
+
+# python tooling
+.venv/
+__pycache__/
+
+# build artifacts
+manual_build.log
+build.log
+build_fixed.log
+build_monitor.log
+perf_results.txt
+perf_output.json
+perf.sql
+
+# temp deploy dirs
+temp_deploy/
+_sync/
+
+# crawler debug logs
+crawler_*.log
+crawler_cron.log
+
+# image assets checked in accidentally
+"violence tracker.png"
+*.png
+!public/**/*.png
+backups/
+logs/
+# github workflows (requires workflow scope on PAT)
+.github/

@@ -1,0 +1,58 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+
+# 1. Package the entire application
+puts "📦 Packaging application..."
+exec tar -czf remote_deploy.tar.gz app components context lib prisma public scripts package.json package-lock.json next.config.ts tsconfig.json postcss.config.mjs eslint.config.mjs crontab.txt components.json next-env.d.ts
+
+# 2. Upload the package
+puts "🚀 Uploading package to production..."
+spawn scp -o StrictHostKeyChecking=no remote_deploy.tar.gz root@46.224.92.166:/var/www/political_violence_tracker/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# 3. SSH and build
+puts "🛠️  Building and restarting on server..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+
+expect "#"
+send "tar -xzf remote_deploy.tar.gz\r"
+
+expect "#"
+send "echo 'Installing dependencies...'\r"
+send "npm install\r"
+
+# Generate Client (Important for schema updates logic if any, or just fresh client)
+expect "#"
+send "npx prisma generate\r"
+
+expect "#"
+send "echo 'Building Next.js...'\r"
+send "npm run build\r"
+
+# Restart App (for UI updates)
+expect "#"
+send "echo 'Restarting Web App...'\r"
+send "pm2 restart political-violence-tracker || pm2 start npm --name 'political-violence-tracker' -- start\r"
+
+# 4. START THE PIPELINE
+expect "#"
+send "echo '🚀 STARTING AI ANALYSIS PIPELINE...'\r"
+# Stop existing pipeline if running
+send "pm2 delete ai-pipeline || true\r"
+# Start new pipeline
+send "pm2 start npx --name 'ai-pipeline' -- tsx scripts/run_ai_pipeline.ts\r"
+send "pm2 save\r"
+
+expect "#"
+send "echo '✅ DEPLOYMENT & PIPELINE STARTED.'\r"
+send "echo 'To monitor progress, use: pm2 logs ai-pipeline'\r"
+send "exit\r"
+expect eof

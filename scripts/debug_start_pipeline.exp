@@ -1,0 +1,30 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+
+puts "📡 Connecting to debug pipeline start..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+
+expect "#"
+send "echo '--- TRYING DIRECT EXECUTION ---'\r"
+send "npx tsx scripts/run_ai_pipeline.ts\r"
+
+# Wait a bit to see output
+expect {
+    "Processing Article" { 
+        puts "✅ Pipeline started successfully in direct mode."
+        send "\x03" ;# Ctrl+C to stop
+    }
+    timeout {
+        puts "⚠️  Timeout waiting for pipeline output."
+    }
+}
+
+expect "#"
+send "exit\r"
+expect eof

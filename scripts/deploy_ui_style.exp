@@ -1,0 +1,35 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set file_local "update_ui_style.tar.gz"
+set file_remote "/var/www/political_violence_tracker/update_ui_style.tar.gz"
+
+spawn scp -o StrictHostKeyChecking=no $file_local $user@$ip:$file_remote
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+
+expect "#"
+send "cd /var/www/political_violence_tracker\r"
+
+expect "#"
+send "tar -xzf update_ui_style.tar.gz\r"
+
+expect "#"
+send "npm run build\r"
+
+expect "#"
+send "pm2 restart all\r"
+
+expect "#"
+send "exit\r"
+expect eof

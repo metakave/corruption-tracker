@@ -1,0 +1,35 @@
+#!/usr/bin/expect
+
+set timeout 120
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set log_path "/var/www/political_violence_tracker/logs/scheduler.log"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+puts "--- WAITING FOR CRON (Timeout 2m) ---"
+# We'll use tail -f with a timeout handled by expect
+send "tail -f $log_path\r"
+
+expect {
+    "Starting Multi-Source Crawler" { 
+        puts "--- DETECTED START ---" 
+        # Wait a bit to see some progress
+        sleep 5
+        send "\x03" ;# Ctrl+C
+    }
+    timeout { 
+        puts "--- TIMEOUT WAITING FOR LOG ---"
+        send "\x03"
+    }
+}
+
+expect "#"
+send "exit\r"
+expect eof

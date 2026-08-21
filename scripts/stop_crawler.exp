@@ -1,0 +1,27 @@
+#!/usr/bin/expect
+
+set timeout 20
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+puts "--- STOPPING CRAWLER ---"
+# Kill all node processes (crawler) and chrome processes (puppeteer)
+# Using pkill -f to match command line
+send "pkill -f node\r"
+send "pkill -f chrome\r"
+send "pkill -f run_scheduler.sh\r"
+
+# Check if they are gone
+send "ps aux | grep -E 'node|chrome|scheduler' | grep -v grep\r"
+
+puts "--- CLEANUP COMPLETE ---"
+send "exit\r"
+expect eof

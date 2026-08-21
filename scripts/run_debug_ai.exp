@@ -1,0 +1,45 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# 1. Upload the debug script
+puts "--- UPLOADING DEBUG SCRIPT ---"
+spawn scp -o StrictHostKeyChecking=no scripts/debug_ai_prod.ts $user@$ip:$remote_path/scripts/debug_ai_prod.ts
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# 2. Upload ai-analysis.ts and event-processor.ts (just in case they deviate or were not fully deployed?)
+# Actually, the 'deploy' step only uploaded the UI fix tarball. The backend files MIGHT BE OLD on the server.
+# This "0 incidents" issue might be because the server code is outdated compared to local.
+# Let's assume for now we just want to run the script. If it imports from local libs, those libs must be on the server.
+
+puts "--- CONNECTING TO SERVER ---"
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect "password:"
+send "$password\r"
+expect "#"
+
+send "cd $remote_path\r"
+
+puts "--- RUNNING DEBUG SCRIPT ---"
+# We need ts-node. If not installed globally, use npx or ./node_modules/.bin/ts-node
+# Using tsx is safer for ESM/TS interop
+send "npx tsx scripts/debug_ai_prod.ts\r"
+
+expect {
+    "Need to install the following packages" { send "y\r"; exp_continue }
+    "AI RESULT:" { }
+    "AI ERROR:" { }
+    timeout { puts "--- TIMEOUT ---"; exit 1 }
+    -re "root@.*#" { }
+}
+
+expect "#"
+send "exit\r"
+expect eof

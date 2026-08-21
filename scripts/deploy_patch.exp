@@ -1,0 +1,49 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set host "root@46.224.92.166"
+set remote_path "/var/www/political_violence_tracker"
+
+# 1. Upload lib/ai-analysis.ts
+spawn scp lib/ai-analysis.ts $host:$remote_path/lib/
+expect {
+    "password:" { send "$password\r" }
+    "yes/no" { send "yes\r"; exp_continue }
+}
+expect eof
+
+# 2. Upload scripts/fine_tune_events.ts
+spawn scp scripts/fine_tune_events.ts $host:$remote_path/scripts/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# 3. SSH and Run Script
+spawn ssh $host
+expect {
+    "password:" { send "$password\r" }
+    "yes/no" { send "yes\r"; exp_continue }
+}
+expect "#"
+
+# Run the command
+send "cd $remote_path\r"
+expect "#"
+
+send "npx ts-node scripts/fine_tune_events.ts\r"
+
+# Wait for completion (look for the success message or error)
+expect {
+    "Fine-Tuning Complete!" { 
+        send_user "\n✅ Remote Verification Completed Successfully!\n" 
+    }
+    timeout { 
+        send_user "\n❌ Remote Verification Timed Out!\n" 
+        exit 1 
+    }
+}
+
+send "exit\r"
+expect eof

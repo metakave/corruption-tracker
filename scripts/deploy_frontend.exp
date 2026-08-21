@@ -1,0 +1,33 @@
+#!/usr/bin/expect -f
+# Deploy Frontend Changes
+set timeout 600
+
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "~#"
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+puts "\n🚀 STARTING FRONTEND BUILD...\n"
+send "export NEXT_TELEMETRY_DISABLED=1\r"
+expect "#"
+
+# Run build
+send "npm run build\r"
+expect {
+    "Compiled successfully" { puts "\n✅ Build Successful\n" }
+    "Error" { puts "\n❌ Build Failed\n"; exit 1 }
+    "#" { puts "\n⚠️ Build finished (check output)\n" }
+}
+
+# Reload PM2
+puts "\n🔄 RELOADING PM2...\n"
+send "pm2 reload all\r"
+expect "scaled" { puts "\n✅ PM2 Reloaded\n" }
+expect "#" 
+
+puts "\n✅ DEPLOYMENT COMPLETE\n"
+send "exit\r"
+expect eof

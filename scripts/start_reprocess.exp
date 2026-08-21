@@ -1,0 +1,27 @@
+#!/usr/bin/expect
+
+set timeout 60
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Start Reprocess with PM2
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+send "cd $remote_path\r"
+expect "#"
+
+# Use pm2 to run the typescript file directly via ts-node/tsx logic or compile first. 
+# PM2 with tsx is easiest: pm2 start "npx tsx scripts/reprocess_all_raw.ts" --name "reprocess-job"
+send "pm2 delete reprocess-job\r"
+expect "#"
+send "pm2 start \"npx tsx scripts/reprocess_all_raw.ts\" --name \"reprocess-job\" --no-autorestart\r"
+expect "#"
+send "pm2 save\r"
+expect "#"
+send "exit\r"
+expect eof

@@ -1,0 +1,27 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+puts "--- STOPPING EVERYTHING ---"
+send "pkill -f node\r"
+send "pkill -f chrome\r"
+send "pkill -f run_scheduler.sh\r"
+
+puts "--- STARTING FRESH CRAWL ---"
+# Give it a second to die
+sleep 2
+send "/bin/bash /var/www/political_violence_tracker/scripts/run_scheduler.sh > /var/www/political_violence_tracker/logs/scheduler.log 2>&1 &\r"
+
+puts "--- LAUNCHED IN BACKGROUND ---"
+send "exit\r"
+expect eof

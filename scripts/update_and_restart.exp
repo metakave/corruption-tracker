@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+
+# 1. Upload modified file
+puts "🚀 Uploading updated event-processor.ts..."
+spawn scp -o StrictHostKeyChecking=no lib/event-processor.ts root@46.224.92.166:/var/www/political_violence_tracker/lib/
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+expect eof
+
+# 2. Restart pipeline
+puts "🔄 Restarting pipeline to apply new logic..."
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "qR0h7fHOfn/kBwoKfOAvVg==\r"
+
+expect "root@"
+send "pm2 restart ai-pipeline\r"
+
+expect "root@"
+send "echo '--- NEW LOGS ---'\r"
+send "pm2 logs ai-pipeline --lines 20 --nostream\r"
+
+expect "root@"
+send "exit\r"
+expect eof

@@ -1,0 +1,57 @@
+#!/usr/bin/expect
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set file_local "deploy_package.tar.gz"
+set file_remote "/var/www/political_violence_tracker/deploy_package.tar.gz"
+
+# 1. Upload
+send_user "\n🚀 Uploading deployment package...\n"
+spawn scp -o StrictHostKeyChecking=no $file_local $user@$ip:$file_remote
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# 2. Deploy
+send_user "\n🛠️  Deploying on server...\n"
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+
+expect "#"
+send "cd /var/www/political_violence_tracker\r"
+
+expect "#"
+send "echo 'Extracting...'\r"
+send "tar -xzf deploy_package.tar.gz\r"
+
+# Short delay
+sleep 2
+
+expect "#"
+send "echo 'Installing dependencies...'\r"
+send "npm install\r"
+
+expect "#"
+send "echo 'Generating Prisma Client...'\r"
+send "npx prisma generate\r"
+
+expect "#"
+send "echo 'Building Next.js App...'\r"
+send "npm run build\r"
+
+expect "#"
+send "echo 'Restarting Application...'\r"
+send "pm2 restart all\r"
+
+expect "#"
+send "echo 'Running Crawler Pipeline...'\r"
+send "npx tsx scripts/crawler.ts > crawler_deploy_run.log 2>&1 &\r"
+
+expect "#"
+send "exit\r"
+expect eof

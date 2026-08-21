@@ -1,0 +1,28 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "echo '--- DETAILED PORT CHECK ---'\r"
+send "netstat -tulnp | grep 5555\r"
+expect "#"
+
+send "echo '--- TESTING LOCALHOST 127.0.0.1 ---'\r"
+send "curl -I http://127.0.0.1:5555\r"
+expect "#"
+
+send "echo '--- TESTING LOCALHOST ::1 ---'\r"
+send "curl -I http://\\\[::1\\\]:5555\r"
+expect "#"
+
+send "exit\r"
+expect eof

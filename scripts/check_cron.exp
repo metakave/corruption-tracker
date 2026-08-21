@@ -1,0 +1,25 @@
+#!/usr/bin/expect
+
+set timeout 20
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "echo '--- SERVER TIME ---'\r"
+send "date\r"
+send "echo '--- CURRENT CRON ---'\r"
+send "crontab -l\r"
+send "echo '--- NODE LOCATION ---'\r"
+send "which node\r"
+send "which npm\r"
+send "ls -l /var/www/political_violence_tracker/scripts/run_scheduler.sh\r"
+send "echo '--- END CHECKS ---'\r"
+send "exit\r"
+expect eof

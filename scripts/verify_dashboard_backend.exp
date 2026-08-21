@@ -1,0 +1,21 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+# 1. Check if Dashboard page is served (looking for HTTP 200 or 401)
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "curl -I http://localhost:3000/audit-dashboard"
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# 2. Check if API returns JSON (with Basic Auth)
+# Credentials: admin:VTracker2026! -> YWRtaW46VlRyYWNrZXIyMDI2IQ==
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "curl -H 'Authorization: Basic YWRtaW46VlRyYWNrZXIyMDI2IQ==' http://localhost:3000/api/admin/logs | head -c 200"
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof

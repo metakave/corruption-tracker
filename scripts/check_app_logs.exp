@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "$password\r"
+
+expect "root@"
+send "echo '--- LISTING CSS CHUNKS ---'\r"
+send "find /var/www/political_violence_tracker/.next/static/css -name '*.css'\r"
+
+expect "root@"
+send "echo '--- BUILD ID ---'\r"
+send "cat /var/www/political_violence_tracker/.next/BUILD_ID\r"
+
+expect "root@"
+send "echo '--- REBUILDING ON SERVER ---'\r"
+send "cd /var/www/political_violence_tracker && npm run build\r"
+
+expect "root@"
+send "pm2 restart 0 --update-env\r"
+
+expect "root@"
+send "exit\r"
+expect eof

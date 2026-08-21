@@ -1,0 +1,42 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload updated scraper files
+spawn scp -o StrictHostKeyChecking=no lib/scrapers/jamuna.ts lib/scrapers/proxies.ts $user@$ip:$remote_path/lib/scrapers/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# SSH to server and restart crawler
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+# Kill any running crawlers
+send "pkill -f 'tsx.*run_crawler.ts' || true\r"
+expect "#"
+
+# Restart the crawler
+send "cd $remote_path\r"
+expect "#"
+send "nohup npx tsx scripts/run_crawler.ts > logs/crawler.log 2>&1 &\r"
+expect "#"
+
+send "sleep 3\r"
+expect "#"
+
+# Verify crawler is running
+send "ps aux | grep 'tsx.*run_crawler' | grep -v grep\r"
+expect "#"
+
+puts "\n=== DEPLOYMENT COMPLETE ==="
+send "exit\r"
+expect eof

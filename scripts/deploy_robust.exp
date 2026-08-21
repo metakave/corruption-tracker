@@ -1,0 +1,56 @@
+
+#!/usr/bin/expect -f
+
+set timeout 600
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+# 1. Upload Tarball
+spawn scp -o StrictHostKeyChecking=no deploy_pack.tar.gz $user@$ip:/var/www/political_violence_tracker/
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+expect eof
+
+# 2. SSH to Extract and Run
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    -re "(?i)password:" { send "$password\r" }
+}
+
+expect "root@"
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+# Extract
+send "tar -xzf deploy_pack.tar.gz\r"
+expect "#"
+
+# Run DB Cleanup
+send "echo '🧹 Running Source Cleanup...'\r"
+send "npx tsx scripts/cleanup_remote_db.ts\r"
+expect {
+    "Cleanup Complete" { send "echo '✅ DB Fixed'\r" }
+}
+expect "#"
+
+# Rebuild UI
+send "echo '🏗️  Rebuilding Next.js Application...'\r"
+send "npm run build\r"
+expect {
+    "Compiled successfully" {}
+    timeout { send "echo '⚠️ Build timed out waiting for output'\r" }
+}
+expect "#"
+
+# Restart
+send "pm2 restart all\r"
+expect "#"
+
+# Verify Status
+send "pm2 list\r"
+expect "#"
+
+send "exit\r"
+expect eof

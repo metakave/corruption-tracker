@@ -1,0 +1,34 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker"
+
+# Upload lib/ai-analysis.ts
+spawn scp -o StrictHostKeyChecking=no lib/ai-analysis.ts $user@$ip:$remote_path/lib/
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# Run restarts on server
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+send "cd $remote_path\r"
+expect "#"
+
+# Restart reprocess job
+send "pm2 restart reprocess-job\r"
+expect {
+    "reprocess-job" { exp_continue }
+    "#" { }
+}
+
+send "exit\r"
+expect eof

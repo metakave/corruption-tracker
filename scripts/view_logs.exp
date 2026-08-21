@@ -1,0 +1,50 @@
+#!/usr/bin/expect -f
+# Quick Log Viewer
+set timeout 30
+
+spawn ssh -o StrictHostKeyChecking=no root@46.224.92.166
+expect "password:"
+send "YahyaAnis2024##\r"
+
+expect "~#"
+send "cd /var/www/political_violence_tracker\r"
+expect "#"
+
+send "echo '═══════════════════════════════════════════════════════════'\r"
+expect "#"
+send "echo '📊 PRODUCTION LOG MONITOR'\r"
+expect "#"
+send "echo '═══════════════════════════════════════════════════════════'\r"
+expect "#"
+send "echo ''\r"
+expect "#"
+
+send "echo '⏰ Current Time:'\r"
+expect "#"
+send "TZ='Asia/Dhaka' date\r"
+expect "#"
+send "echo ''\r"
+expect "#"
+
+send "echo '📅 Cron Schedule:'\r"
+expect "#"
+send "crontab -l | grep scheduler\r"
+expect "#"
+send "echo ''\r"
+expect "#"
+
+send "echo '📝 Last 50 Log Lines:'\r"
+expect "#"
+send "echo '───────────────────────────────────────────────────────────'\r"
+expect "#"
+send "tail -50 logs/scheduler.log\r"
+expect "#"
+send "echo '───────────────────────────────────────────────────────────'\r"
+expect "#"
+send "echo ''\r"
+expect "#"
+
+send "echo 'ℹ️  To see live updates, run: tail -f logs/scheduler.log'\r"
+expect "#"
+send "exit\r"
+expect eof

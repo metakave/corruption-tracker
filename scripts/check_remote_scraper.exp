@@ -1,0 +1,21 @@
+#!/usr/bin/expect
+
+set timeout 20
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set remote_path "/var/www/political_violence_tracker/lib/scrapers/ajkerpatrika.ts"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+puts "--- CHECKING REMOTE SCRAPER ---"
+send "cat $remote_path | head -n 20\r"
+
+expect "#"
+send "exit\r"
+expect eof

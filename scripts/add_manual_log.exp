@@ -1,0 +1,25 @@
+#!/usr/bin/expect
+
+set timeout 30
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+set log_file "/var/www/political_violence_tracker/logs/audit_trail.csv"
+set entry "1/4/2026, 6:37:17 PM,VIOLENCE,Active Violence Detected,dhakapost.com,https://www.dhakapost.com/national/345229,10,কারওয়ান বাজারে ফের মোবাইল ফোন ব্যবসায়ীরা"
+
+# First check if it exists
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "grep '345229' $log_file"
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof
+
+# If grep failed (exit code 1), append it. But expect handles interaction, so we can just blindly append if not found manually.
+# Let's just append it using echo for simplicity, realizing duplicates might happen if not careful, but grep check is hard in pure expect without logic.
+# Actually, let's use a shell one-liner passed to ssh.
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip "grep -q '345229' $log_file || echo '$entry' >> $log_file"
+expect {
+    "password:" { send "$password\r" }
+}
+expect eof

@@ -1,0 +1,20 @@
+#!/usr/bin/expect
+
+set timeout 300
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+# Restart the Next.js application
+send "pm2 restart political-violence-tracker\r"
+expect "#"
+
+puts "\n=== RESTART COMPLETE ==="
+send "exit\r"
+expect eof

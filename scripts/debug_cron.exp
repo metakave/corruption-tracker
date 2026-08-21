@@ -1,0 +1,25 @@
+#!/usr/bin/expect
+
+set timeout 20
+set ip "46.224.92.166"
+set user "root"
+set password "qR0h7fHOfn/kBwoKfOAvVg=="
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip
+
+expect {
+    "password:" { send "$password\r" }
+}
+expect "#"
+
+puts "--- CHECKING SYSLOG FOR CRON ---"
+# Check mostly recent lines. grep for CRON
+send "grep CRON /var/log/syslog | tail -n 20\r"
+
+puts "--- TRYING MANUAL RUN ---"
+# Run exactly as cron would (except maybe env differences)
+send "/bin/bash /var/www/political_violence_tracker/scripts/run_scheduler.sh\r"
+
+expect "#"
+send "exit\r"
+expect eof
