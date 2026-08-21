@@ -202,10 +202,11 @@ export default function DashboardNavbar() {
                             </nav>
 
                             {/* Mobile Footer Actions (Settings) */}
+                            {/* Mobile Footer Actions (Settings) */}
                             <div className="p-4 border-t border-gray-200 dark:border-slate-800 space-y-4 shrink-0">
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('theme')}</span>
-                                    <ThemeSelector />
+                                    <ThemeToggle />
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('notifications')}</span>
@@ -235,7 +236,7 @@ export default function DashboardNavbar() {
                         />
                     </div>
                     <h2 className={`text-sm font-semibold text-gray-800 dark:text-white truncate max-w-[140px] leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        <span className="text-red-600 dark:text-red-500 block sm:inline">{t('app_name_violence')}</span> {t('app_name_tracker')}
+                        <span className="text-emerald-600 dark:text-emerald-400 block sm:inline">{t('app_name_violence')}</span> {t('app_name_tracker')}
                     </h2>
                 </Link>
 
@@ -243,22 +244,20 @@ export default function DashboardNavbar() {
             </div>
 
             {/* Right Side: Actions */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
 
                 {/* Language Switcher */}
                 <LanguageSwitcher />
 
-                {/* Theme Selector (Visible on all screens) */}
-                <div>
-                    <ThemeSelector />
-                </div>
+                {/* Light / Dark Mode Switcher */}
+                <ThemeToggle />
 
                 {/* Divider */}
-                <div className="hidden md:flex h-6 w-px bg-gray-200 dark:bg-slate-700 mx-2"></div>
+                <div className="hidden md:flex h-6 w-px bg-gray-200 dark:bg-slate-700 mx-1"></div>
 
                 {/* Desktop Status Indicators */}
                 <div className="hidden md:flex items-center text-xs font-mono text-gray-500 dark:text-gray-400">
-                    <span className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-2 py-0.5 rounded border border-red-100 dark:border-red-900/30 mr-2 font-bold">{t('live')}</span>
+                    <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/40 mr-2 font-bold">{t('live')}</span>
                     <span className="text-gray-400 dark:text-gray-500 border-l border-gray-300 dark:border-gray-700 pl-2">{t('tracking_sources')}</span>
                 </div>
 
@@ -268,7 +267,7 @@ export default function DashboardNavbar() {
                     <input
                         type="text"
                         placeholder={t('search_placeholder')}
-                        className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                        className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                 </div>
 
@@ -280,7 +279,7 @@ export default function DashboardNavbar() {
                     className="hidden md:block relative p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                 >
                     <Activity className="w-5 h-5" />
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900"></span>
                 </button>
 
                 {/* Notification Panel */}
@@ -295,5 +294,5 @@ export default function DashboardNavbar() {
 
 // Need to import the switchers and notification panel
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { ThemeSelector } from "./ThemeSelector";
+import { ThemeToggle } from "./ThemeToggle";
 import { NotificationPanel } from "./NotificationPanel";

@@ -5,19 +5,32 @@ import { Moon, Sun } from 'lucide-react'
 import { useTheme } from '@/components/theme-provider'
 
 export function ThemeToggle() {
-    const { theme, setTheme } = useTheme()
+    const { resolvedTheme, setTheme } = useTheme()
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    const isDark = resolvedTheme === 'dark'
 
     return (
-
         <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 mr-2 rounded-full hover:bg-slate-200 dark:hover:bg-gray-800 transition-all border border-transparent dark:border-gray-700 bg-slate-100 dark:bg-gray-900 text-slate-600 dark:text-gray-300 relative h-9 w-9 flex items-center justify-center shrink-0"
-            title="Toggle Theme"
+            onClick={() => setTheme(isDark ? 'light' : 'dark')}
+            className="h-9 w-9 rounded-lg flex items-center justify-center border border-gray-200 dark:border-slate-700 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm focus:outline-none shrink-0 cursor-pointer"
+            title={mounted ? (isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode') : 'Toggle Theme'}
+            aria-label="Toggle light and dark theme"
         >
-            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 absolute" />
-            <Moon className="h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 absolute" />
+            {mounted ? (
+                isDark ? (
+                    <Sun className="h-4.5 w-4.5 text-amber-400 animate-in fade-in zoom-in duration-200" />
+                ) : (
+                    <Moon className="h-4.5 w-4.5 text-slate-700 animate-in fade-in zoom-in duration-200" />
+                )
+            ) : (
+                <div className="h-4.5 w-4.5" />
+            )}
             <span className="sr-only">Toggle theme</span>
         </button>
     )
-
 }
