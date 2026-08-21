@@ -89,10 +89,10 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
                     </div>
                     <div className="mt-3">
                         <h3 className="text-xl font-bold text-zinc-900 dark:text-white truncate">
-                            {stats.topSector?.name || "স্বাস্থ্য ও প্রশাসন"}
+                            {stats.topSector?.name || (language === 'bn' ? "স্বাস্থ্য ও প্রশাসন" : "Health & Administration")}
                         </h3>
                         <span className="text-xs text-amber-600 dark:text-amber-400 mt-2 inline-block font-medium">
-                            {stats.topSector?.count || 0} টি রিপোর্ট
+                            {stats.topSector?.count || 0} {t('reports_count')}
                         </span>
                     </div>
                 </div>
@@ -100,17 +100,17 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
                 {/* Hotspot District */}
                 <div className="bg-white dark:bg-zinc-900/80 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between">
                     <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">সর্বাধিক ঘটনা প্রবণ জেলা</span>
+                        <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t('hotspot_district')}</span>
                         <div className="p-2 bg-blue-50 dark:bg-blue-950/50 rounded-lg text-blue-600 dark:text-blue-400">
                             <MapPin className="w-5 h-5" />
                         </div>
                     </div>
                     <div className="mt-3">
                         <h3 className="text-xl font-bold text-zinc-900 dark:text-white">
-                            {stats.hotspot?.name || "ঢাকা"}
+                            {stats.hotspot?.name || (language === 'bn' ? "ঢাকা" : "Dhaka")}
                         </h3>
                         <span className="text-xs text-blue-600 dark:text-blue-400 mt-2 inline-block font-medium">
-                            {stats.hotspot?.count || 0} টি তদন্তাধীন ঘটনা
+                            {stats.hotspot?.count || 0} {t('under_investigation')}
                         </span>
                     </div>
                 </div>
@@ -122,10 +122,10 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                             <MapPin className="w-5 h-5 text-emerald-500" />
-                            {t('map')} - জেলাভিত্তিক দুর্নীতির বিস্তার
+                            {t('map')} - {t('map_district_spread')}
                         </h3>
                         <Link href="/map" className="text-xs text-emerald-600 dark:text-emerald-400 font-medium hover:underline">
-                            বড় ম্যাপ দেখুন →
+                            {t('view_large_map')}
                         </Link>
                     </div>
                     <div className="h-[400px] rounded-xl overflow-hidden">
@@ -137,23 +137,23 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
                     <div>
                         <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                             <Building2 className="w-5 h-5 text-indigo-500" />
-                            খাতভিত্তিক অনিয়ম ও ক্ষতি
+                            {t('sector_breakdown_title')}
                         </h3>
                         <div className="space-y-3">
                             {(stats.sectorBreakdowns && stats.sectorBreakdowns.length > 0 ? stats.sectorBreakdowns : [
-                                { sectorOrMinistry: 'ব্যাংক ও আর্থিক প্রতিষ্ঠান', _count: { id: 18 }, _sum: { amountInvolved: 5200000000 } },
-                                { sectorOrMinistry: 'স্বাস্থ্য ও পরিবার কল্যাণ', _count: { id: 12 }, _sum: { amountInvolved: 850000000 } },
-                                { sectorOrMinistry: 'সড়ক, সেতু ও যোগাযোগ', _count: { id: 9 }, _sum: { amountInvolved: 1400000000 } },
-                                { sectorOrMinistry: 'ভূমি ও আবাসন', _count: { id: 7 }, _sum: { amountInvolved: 430000000 } },
-                                { sectorOrMinistry: 'কাস্টমস, এনবিআর ও কর', _count: { id: 6 }, _sum: { amountInvolved: 920000000 } },
+                                { sectorOrMinistry: language === 'bn' ? 'ব্যাংক ও আর্থিক প্রতিষ্ঠান' : 'Banking & Financial Institutions', _count: { id: 18 }, _sum: { amountInvolved: 5200000000 } },
+                                { sectorOrMinistry: language === 'bn' ? 'স্বাস্থ্য ও পরিবার কল্যাণ' : 'Health & Family Welfare', _count: { id: 12 }, _sum: { amountInvolved: 850000000 } },
+                                { sectorOrMinistry: language === 'bn' ? 'সড়ক, সেতু ও যোগাযোগ' : 'Roads, Bridges & Transport', _count: { id: 9 }, _sum: { amountInvolved: 1400000000 } },
+                                { sectorOrMinistry: language === 'bn' ? 'ভূমি ও আবাসন' : 'Land & Housing', _count: { id: 7 }, _sum: { amountInvolved: 430000000 } },
+                                { sectorOrMinistry: language === 'bn' ? 'কাস্টমস, এনবিআর ও কর' : 'Customs, NBR & Taxes', _count: { id: 6 }, _sum: { amountInvolved: 920000000 } },
                             ]).map((item: any, idx: number) => (
                                 <div key={idx} className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{item.sectorOrMinistry}</p>
-                                        <p className="text-xs text-zinc-500">{item._count?.id || item.count} টি ঘটনা</p>
+                                        <p className="text-xs text-zinc-500">{item._count?.id || item.count} {t('cases_count')}</p>
                                     </div>
                                     <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded">
-                                        ৳{((item._sum?.amountInvolved || 0) / 10000000).toFixed(1)} কোটি
+                                        ৳{((item._sum?.amountInvolved || 0) / 10000000).toFixed(1)} {t('crores_unit')}
                                     </span>
                                 </div>
                             ))}
@@ -163,7 +163,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
                     <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                         <Link href="/data" className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-colors shadow-sm">
                             <Download className="w-4 h-4" />
-                            সম্পূর্ণ দুর্নীতি ডাটাবেজ দেখুন
+                            {t('view_full_database')}
                         </Link>
                     </div>
                 </div>

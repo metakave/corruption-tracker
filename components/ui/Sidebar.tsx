@@ -62,9 +62,9 @@ export default function DashboardSidebar() {
             <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 text-xs text-zinc-400">
                 <div className="flex items-center gap-2 mb-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="font-medium text-zinc-600 dark:text-zinc-300">ক্রলার ও এআই সক্রিয়</span>
+                    <span className="font-medium text-zinc-600 dark:text-zinc-300">{t('crawler_ai_active')}</span>
                 </div>
-                <p className="text-[11px] text-zinc-400">সংস্করণ ১.০ (দুর্নীতি নজরদারি)</p>
+                <p className="text-[11px] text-zinc-400">{t('sidebar_version')}</p>
             </div>
         </aside>
     )
