@@ -152,14 +152,40 @@ export const translations: Record<string, Record<Language, string>> = {
     'data_terms_title': { bn: 'তথ্যের উৎস ও নীতিমালা', en: 'Data Source & Disclaimer' },
     'data_terms_desc': { bn: 'প্ল্যাটফর্মের সকল তথ্য মূলধারার শীর্ষ গণমাধ্যম থেকে সরাসরি উদ্ধৃত। প্রতিটি তথ্যের সাথে মূল সংবাদের লিঙ্ক সংযুক্ত রয়েছে।', en: 'All data is aggregated transparently from accredited national news sources, citing direct attribution and original canonical links.' },
 
-    'ai_nlp_tools': { bn: 'এআই ও এলএলএম ডেভলপমেন্ট', en: 'AI & LLM Data Structuring' },
-    'ai_desc': { bn: 'অবিন্যস্ত টেক্সট ও খবর থেকে স্বয়ংক্রিয়ভাবে তথ্য উদ্ধার, সারসংক্ষেপ তৈরি ও শ্রেণিবিন্যাস।', en: 'Extract structured facts, perform entity recognition, summarize reports, and classify noisy unstructured text.' },
-    'analytics_dashboards': { bn: 'ইন্টারেক্টিভ ড্যাশবোর্ড ও ম্যাপ', en: 'Interactive Analytics & Maps' },
-    'dashboards_desc': { bn: 'নেক্সট.জেএস ও ক্লাউড প্রযুক্তির মাধ্যমে দ্রুতগতির ভিজ্যুয়াল ডাটা ড্যাশবোর্ড।', en: 'Blazing fast Next.js applications featuring real-time maps, advanced charting, and exportable datasets.' },
-    'tech_stack': { bn: 'প্রযুক্তি স্ট্যাক', en: 'Our Technology Stack' },
-    'ready_to_build': { bn: 'আপনার প্রকল্প নিয়ে আলোচনা করতে চান?', en: 'Ready to build your next data project?' },
-    'build_desc': { bn: 'আমাদের টিম আপনার প্রয়োজনীয়তা অনুযায়ী সেরা প্রযুক্তি সমাধান দিতে প্রস্তুত।', en: 'Talk with our engineering team to design the optimal data and AI solution for your goals.' },
-    'talk_to_expert': { bn: 'বিশেষজ্ঞের সাথে কথা বলুন', en: 'Chat With an Expert' },
+    // Technical Collaboration & Services Page
+    'business_hero_title': { bn: 'প্রযুক্তিগত সহযোগিতা ও ডেটা ইঞ্জিনিয়ারিং', en: 'Technical Collaboration & Data Engineering' },
+    'business_hero_desc': { 
+        bn: 'আমরা দুর্নীতি বিরোধী গবেষণা সংস্থা, থিংকট্যাংক, অনুসন্ধানী সাংবাদিক ও সুশীল সমাজের সাথে যৌথভাবে কাস্টম ডেটা ক্রলার, এআই অ্যানালাইসিস পাইপলাইন ও ইন্টেলিজেন্স ড্যাশবোর্ড তৈরিতে কাজ করি।', 
+        en: 'We partner with anti-corruption watchdogs, think tanks, investigative newsrooms, and civil society to engineer high-resilience web scrapers, LLM forensic pipelines, and interactive analytics platforms.' 
+    },
+    'contact_consultation': { bn: 'পরামর্শের জন্য যোগাযোগ করুন', en: 'Contact for Consultation' },
+    'what_we_build': { bn: 'আমরা যা তৈরি করি', en: 'What We Build' },
+    'services_desc': { 
+        bn: 'স্বয়ংক্রিয় ডেটা সংগ্রহ থেকে শুরু করে এআই-চালিত আর্থিক অপরাধ ফরেনসিক অ্যানালিটিক্স পর্যন্ত শক্তিশালী সমাধান।', 
+        en: 'From automated public data ingestion to AI-driven financial crime forensic analytics, we build robust end-to-end data systems.' 
+    },
+    'custom_scrapers': { bn: 'স্বয়ংক্রিয় ডেটা সংগ্রহ ও ক্রলিং', en: 'Automated Data Ingestion & Crawlers' },
+    'scrapers_desc': { 
+        bn: 'জটিল ও ডায়নামিক পোর্টাল থেকে রিয়েল-টাইম সংবাদ ও সরকারি গেজেট সংগ্রহের স্বয়ংক্রিয় স্ক্র্যাপিং সিস্টেম।', 
+        en: 'Fault-tolerant, automated crawlers engineered for real-time aggregation across complex news portals and public registries.' 
+    },
+    'ai_nlp_tools': { bn: 'এআই ও এনএলপি ফরেনসিক টুলস', en: 'AI & NLP Forensic Structuring' },
+    'ai_desc': { 
+        bn: 'সংবাদ ও নথি থেকে টাকার পরিমাণ (BDT) হিসাব, জড়িত ব্যক্তি ও প্রতিষ্ঠান শনাক্তকরণ এবং দুদকের অনুসন্ধান স্থিতি নির্ধারণ।', 
+        en: 'Extract financial damages in BDT, identify accused corporate entities, and classify judicial investigation stages.' 
+    },
+    'analytics_dashboards': { bn: 'ইন্টারেক্টিভ ড্যাশবোর্ড ও মানচিত্র', en: 'Interactive Dashboards & Geo-Maps' },
+    'dashboards_desc': { 
+        bn: 'নেক্সট.জেএস ও ক্লাউড প্রযুক্তিতে তৈরি দ্রুতগতির ভিজ্যুয়াল ড্যাশবোর্ড, জেলাভিত্তিক মানচিত্র ও ফিল্টারিং সুবিধা।', 
+        en: 'Blazing fast Next.js applications featuring spatial district heatmaps, sectoral breakdown charts, and full data export.' 
+    },
+    'tech_stack': { bn: 'আমরা যে প্রযুক্তিতে দক্ষ', en: 'Technologies We Master' },
+    'ready_to_build': { bn: 'আপনার সমাধান তৈরি করতে প্রস্তুত?', en: 'Ready to Build Your Solution?' },
+    'build_desc': { 
+        bn: 'আসুন আলোচনা করি কিভাবে আমরা আপনার তথ্য সংগ্রহ ও বিশ্লেষণ প্রক্রিয়া স্বয়ংক্রিয় করতে পারি।', 
+        en: 'Let’s discuss how automated pipelines and custom AI models can empower your investigative research.' 
+    },
+    'talk_to_expert': { bn: 'বিশেষজ্ঞের সাথে কথা বলুন', en: 'Talk to an Expert' },
 
     // FAQ Page
     'faq_title': { bn: 'সাধারণ জিজ্ঞাসা (FAQ)', en: 'Frequently Asked Questions' },
