@@ -28,22 +28,19 @@ const EVENT_COLS: ColMeta[] = [
     { key: 'dateOfIncident', label: 'Incident Date' },
     { key: 'district', label: 'District' },
     { key: 'locationText', label: 'Location' },
-    { key: 'latitude', label: 'Latitude' },
-    { key: 'longitude', label: 'Longitude' },
-    { key: 'killed', label: 'Killed' },
-    { key: 'injured', label: 'Injured' },
+    { key: 'sectorOrMinistry', label: 'Sector / Ministry' },
+    { key: 'amountInvolved', label: 'Amount Involved (BDT)' },
+    { key: 'amountFormatted', label: 'Amount Formatted' },
+    { key: 'investigatingAgency', label: 'Investigating Agency' },
+    { key: 'legalStatus', label: 'Legal Status' },
     { key: 'severityScore', label: 'Severity' },
     { key: 'confidence', label: 'Confidence' },
     { key: 'category', label: 'Category' },
-    { key: 'politicalParties', label: 'Political Parties' },
-    { key: 'victimParties', label: 'Victim Parties' },
-    { key: 'perpetratorParties', label: 'Perpetrator Parties' },
-    { key: 'actors', label: 'Actors' },
     { key: 'summary', label: 'Summary' },
     { key: 'source', label: 'Source' },
     { key: 'additionalSources', label: 'Additional Sources' },
     { key: 'url', label: 'URL' },
-    { key: 'isPoliticalViolence', label: 'Is Political Violence' },
+    { key: 'isCorruption', label: 'Is Corruption' },
     { key: 'aiReasoning', label: 'AI Decision Reasoning' },
     { key: 'createdAt', label: 'Created At' },
 ]
@@ -89,8 +86,8 @@ const FORMAT_META: Record<Format, { label: string; icon: typeof FileText }> = {
 interface Options {
     districts: string[]
     categories: string[]
+    sectors: string[]
     sources: string[]
-    parties: string[]
     counts: { events: number; raw: number; rawUnprocessed: number }
 }
 
@@ -99,16 +96,16 @@ interface Filters {
     to: string
     district: string
     category: string
-    minKilled: string
-    party: string
+    sector: string
+    minSeverity: string
     source: string
     processed: string
     by: 'day' | 'category' | 'district'
 }
 
 const EMPTY_FILTERS: Filters = {
-    from: '', to: '', district: '', category: '', minKilled: '',
-    party: '', source: '', processed: '', by: 'day',
+    from: '', to: '', district: '', category: '', sector: '', minSeverity: '',
+    source: '', processed: '', by: 'day',
 }
 
 export default function DownloadPage() {
@@ -152,8 +149,8 @@ export default function DownloadPage() {
         if (dataset === 'events' || dataset === 'stats') {
             if (filters.district) p.set('district', filters.district)
             if (filters.category) p.set('category', filters.category)
-            if (filters.minKilled) p.set('minKilled', filters.minKilled)
-            if (filters.party) p.set('party', filters.party)
+            if (filters.sector) p.set('sector', filters.sector)
+            if (filters.minSeverity) p.set('minSeverity', filters.minSeverity)
         }
         if (dataset === 'raw' || dataset === 'audit') {
             if (filters.source) p.set('source', filters.source)
@@ -177,26 +174,26 @@ export default function DownloadPage() {
     }
 
     const datasetMeta = useMemo(() => ([
-        { key: 'events' as Dataset, icon: Database, title: t('dl_ds_events'), desc: t('dl_ds_events_desc'), count: options?.counts.events },
-        { key: 'raw' as Dataset, icon: Newspaper, title: t('dl_ds_raw'), desc: t('dl_ds_raw_desc'), count: options?.counts.raw },
+        { key: 'events' as Dataset, icon: Database, title: t('dl_ds_events'), desc: t('dl_ds_events_desc'), count: options?.counts?.events },
+        { key: 'raw' as Dataset, icon: Newspaper, title: t('dl_ds_raw'), desc: t('dl_ds_raw_desc'), count: options?.counts?.raw },
         { key: 'stats' as Dataset, icon: BarChart3, title: t('dl_ds_stats'), desc: t('dl_ds_stats_desc'), count: undefined },
-        { key: 'audit' as Dataset, icon: ScanSearch, title: t('dl_ds_audit'), desc: t('dl_ds_audit_desc'), count: options?.counts.raw },
+        { key: 'audit' as Dataset, icon: ScanSearch, title: t('dl_ds_audit'), desc: t('dl_ds_audit_desc'), count: options?.counts?.raw },
     ]), [t, options])
 
-    const inputCls = 'w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500'
+    const inputCls = 'w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500'
     const labelCls = 'block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1'
 
     return (
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 min-h-screen">
             <div className="flex items-center gap-3 mb-2">
-                <Download className="w-7 h-7 text-red-600 dark:text-red-500" />
+                <Download className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{t('dl_title')}</h1>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-2xl">{t('dl_subtitle')}</p>
 
             {/* Dataset selector */}
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-3">{t('dl_dataset')}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
                 {datasetMeta.map((d) => {
                     const active = dataset === d.key
                     return (
@@ -204,14 +201,14 @@ export default function DownloadPage() {
                             key={d.key}
                             onClick={() => setDataset(d.key)}
                             className={`text-left p-4 rounded-xl border transition-all ${active
-                                ? 'border-red-500 bg-red-50 dark:bg-red-900/15 ring-1 ring-red-500/30'
+                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 ring-1 ring-emerald-500/30 shadow-sm'
                                 : 'border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-gray-300 dark:hover:border-slate-700'}`}
                         >
-                            <d.icon className={`w-6 h-6 mb-2 ${active ? 'text-red-600 dark:text-red-400' : 'text-gray-400'}`} />
+                            <d.icon className={`w-6 h-6 mb-2 ${active ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400'}`} />
                             <div className="font-semibold text-gray-900 dark:text-white text-sm">{d.title}</div>
                             <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{d.desc}</div>
                             {typeof d.count === 'number' && (
-                                <div className="text-xs mt-2 font-mono text-gray-400">{d.count.toLocaleString()} {t('dl_records')}</div>
+                                <div className="text-xs mt-2 font-mono text-emerald-600 dark:text-emerald-400 font-semibold">{d.count.toLocaleString()} {t('dl_records')}</div>
                             )}
                         </button>
                     )
@@ -221,7 +218,7 @@ export default function DownloadPage() {
             {/* Filters */}
             <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">{t('dl_filters')}</h2>
-                <button onClick={() => setFilters(EMPTY_FILTERS)} className="flex items-center gap-1 text-xs text-gray-500 hover:text-red-600 dark:hover:text-red-400">
+                <button onClick={() => setFilters(EMPTY_FILTERS)} className="flex items-center gap-1 text-xs text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400">
                     <RotateCcw className="w-3 h-3" /> {t('dl_reset')}
                 </button>
             </div>
@@ -241,26 +238,26 @@ export default function DownloadPage() {
                             <label className={labelCls}>{t('dl_district')}</label>
                             <select value={filters.district} onChange={(e) => set({ district: e.target.value })} className={inputCls}>
                                 <option value="">{t('dl_all')}</option>
-                                {options?.districts.map((d) => <option key={d} value={d}>{d}</option>)}
+                                {(options?.districts || []).map((d) => <option key={d} value={d}>{d}</option>)}
                             </select>
                         </div>
                         <div>
                             <label className={labelCls}>{t('dl_category')}</label>
                             <select value={filters.category} onChange={(e) => set({ category: e.target.value })} className={inputCls}>
                                 <option value="">{t('dl_all')}</option>
-                                {options?.categories.map((c) => <option key={c} value={c}>{c}</option>)}
+                                {(options?.categories || []).map((c) => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className={labelCls}>{t('dl_min_killed')}</label>
-                            <input type="number" min={0} value={filters.minKilled} onChange={(e) => set({ minKilled: e.target.value })} className={inputCls} />
-                        </div>
-                        <div>
-                            <label className={labelCls}>{t('dl_party')}</label>
-                            <select value={filters.party} onChange={(e) => set({ party: e.target.value })} className={inputCls}>
+                            <label className={labelCls}>{t('dl_sector')}</label>
+                            <select value={filters.sector} onChange={(e) => set({ sector: e.target.value })} className={inputCls}>
                                 <option value="">{t('dl_all')}</option>
-                                {options?.parties.map((pn) => <option key={pn} value={pn}>{pn}</option>)}
+                                {(options?.sectors || []).map((s) => <option key={s} value={s}>{s}</option>)}
                             </select>
+                        </div>
+                        <div>
+                            <label className={labelCls}>{t('dl_min_severity')}</label>
+                            <input type="number" min={1} max={10} placeholder="1-10" value={filters.minSeverity} onChange={(e) => set({ minSeverity: e.target.value })} className={inputCls} />
                         </div>
                     </>
                 )}
@@ -271,7 +268,7 @@ export default function DownloadPage() {
                             <label className={labelCls}>{t('dl_source')}</label>
                             <select value={filters.source} onChange={(e) => set({ source: e.target.value })} className={inputCls}>
                                 <option value="">{t('dl_all')}</option>
-                                {options?.sources.map((s) => <option key={s} value={s}>{s}</option>)}
+                                {(options?.sources || []).map((s) => <option key={s} value={s}>{s}</option>)}
                             </select>
                         </div>
                         <div>
@@ -305,8 +302,8 @@ export default function DownloadPage() {
                     <div className="flex items-center justify-between mb-3">
                         <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">{t('dl_columns')}</h2>
                         <div className="flex gap-3 text-xs">
-                            <button onClick={() => setSelectedCols(datasetCols.map((c) => c.key))} className="text-gray-500 hover:text-red-600 dark:hover:text-red-400">{t('dl_select_all')}</button>
-                            <button onClick={() => setSelectedCols([])} className="text-gray-500 hover:text-red-600 dark:hover:text-red-400">{t('dl_clear')}</button>
+                            <button onClick={() => setSelectedCols(datasetCols.map((c) => c.key))} className="text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400">{t('dl_select_all')}</button>
+                            <button onClick={() => setSelectedCols([])} className="text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400">{t('dl_clear')}</button>
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-2 mb-8">
@@ -317,7 +314,7 @@ export default function DownloadPage() {
                                     key={c.key}
                                     onClick={() => toggleCol(c.key)}
                                     className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${on
-                                        ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-medium'
                                         : 'border-gray-200 dark:border-slate-700 text-gray-500 dark:text-gray-400 hover:border-gray-300'}`}
                                 >
                                     {c.label}
@@ -339,7 +336,7 @@ export default function DownloadPage() {
                             key={fmt}
                             onClick={() => triggerDownload(fmt)}
                             disabled={disabled || busy !== null}
-                            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold shadow-sm transition-colors"
+                            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold shadow-sm transition-all hover:scale-105"
                         >
                             {busy === fmt ? <Loader2 className="w-4 h-4 animate-spin" /> : <meta.icon className="w-4 h-4" />}
                             {meta.label}
