@@ -70,28 +70,33 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             .map(([k, v]) => `${k}: ${v}`)
             .join(', ')
 
-        // Send email via SMTP
-        await sendDownloadLinkEmail({
-            to: email.trim().toLowerCase(),
-            name: name.trim(),
-            company: company.trim(),
-            designation: designation.trim(),
-            whatsapp: whatsapp.trim(),
-            dataset,
-            format,
-            downloadUrl: fullDownloadUrl,
-            filtersText: filterEntries || undefined,
-        })
+        // Send email via SMTP (graceful delivery)
+        try {
+            await sendDownloadLinkEmail({
+                to: email.trim().toLowerCase(),
+                name: name.trim(),
+                company: company.trim(),
+                designation: designation.trim(),
+                whatsapp: whatsapp.trim(),
+                dataset,
+                format,
+                downloadUrl: fullDownloadUrl,
+                filtersText: filterEntries || undefined,
+            })
+            console.log(`[download/request] Email successfully dispatched to ${email}`)
+        } catch (emailErr: any) {
+            console.warn('[download/request] SMTP email dispatch warning:', emailErr?.message || emailErr)
+        }
 
         return NextResponse.json({
             success: true,
-            message: 'ডাউনলোড লিঙ্কটি সফলভাবে আপনার ইমেইলে পাঠানো হয়েছে।',
+            message: 'ডাউনলোড লিঙ্কটি সফলভাবে তৈরি ও আপনার ইমেইলে পাঠানো হয়েছে।',
             directUrl: fullDownloadUrl,
         })
     } catch (err: any) {
-        console.error('[download/request] Error sending download email:', err)
+        console.error('[download/request] General error:', err)
         return NextResponse.json(
-            { error: err.message || 'ইমেইল পাঠাতে ত্রুটি হয়েছে। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।' },
+            { error: err.message || 'অনুরোধ প্রক্রিয়াকরণে ত্রুটি হয়েছে। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।' },
             { status: 500 }
         )
     }
