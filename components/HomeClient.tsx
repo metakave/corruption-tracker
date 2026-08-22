@@ -124,7 +124,12 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
                             <MapPin className="w-5 h-5 text-emerald-500" />
                             {t('map')} - {t('map_district_spread')}
                         </h3>
-                        <Link href="/map" className="text-xs text-emerald-600 dark:text-emerald-400 font-medium hover:underline">
+                        <Link
+                            href="/map"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-emerald-600 dark:text-emerald-400 font-medium hover:underline"
+                        >
                             {t('view_large_map')}
                         </Link>
                     </div>

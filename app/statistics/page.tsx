@@ -386,7 +386,12 @@ export default function StatisticsPage() {
                             <MapPin className="w-4 h-4 text-emerald-500" />
                             শীর্ষ জেলাসমূহ (Top District Hotspots)
                         </h2>
-                        <Link href="/map" className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1">
+                        <Link
+                            href="/map"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                        >
                             মানচিত্রে দেখুন <ArrowRight className="w-3 h-3" />
                         </Link>
                     </div>

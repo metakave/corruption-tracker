@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, Table as TableIcon, BarChart3, Info, Map, Download, ShieldAlert, Building2 } from 'lucide-react'
+import { LayoutDashboard, Table as TableIcon, BarChart3, Info, Map, ShieldAlert, Building2 } from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 
 export default function DashboardSidebar() {
@@ -16,7 +16,6 @@ export default function DashboardSidebar() {
         { nameKey: 'map', href: '/map', icon: Map },
         { nameKey: 'analytics', href: '/statistics', icon: BarChart3 },
         { nameKey: 'data_table', href: '/data', icon: TableIcon },
-        { nameKey: 'download_data', href: '/data', icon: Download },
         { nameKey: 'about', href: '/about', icon: Info },
     ]
 
@@ -45,6 +44,8 @@ export default function DashboardSidebar() {
                         <Link
                             key={item.nameKey}
                             href={item.href}
+                            target={item.href === '/map' ? '_blank' : undefined}
+                            rel={item.href === '/map' ? 'noopener noreferrer' : undefined}
                             className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${
                                 isActive
                                     ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold'

@@ -36,8 +36,23 @@ export default function AboutClient() {
                     </p>
 
                     <div className="grid md:grid-cols-2 gap-8 mt-8">
-                        {/* Member 1: Musfiqur Tuhin */}
-                        {/* Changed hover effect: Removed background change, added border color transition and slight scale */}
+                        {/* Member 1: Sadiq M Alan */}
+                        <div className="flex flex-col items-center text-center p-6 bg-background dark:bg-slate-800 rounded-lg border border-transparent dark:border-slate-700 hover:border-red-200 dark:hover:border-red-900/50 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                            <div className="w-32 h-32 rounded-full bg-slate-200 mb-4 overflow-hidden border-4 border-primary/10">
+                                <img
+                                    src="/images/sadiq.jpg"
+                                    alt="Sadiq M Alan"
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.currentTarget.src = "https://ui-avatars.com/api/?name=Sadiq+M+Alan&background=random&size=128"
+                                    }}
+                                />
+                            </div>
+                            <h3 className="text-xl font-bold dark:text-white">{t('sadiq_name')}</h3>
+                            <p className="text-sm font-medium text-primary dark:text-blue-400">{t('founder_role')}</p>
+                        </div>
+
+                        {/* Member 2: Musfiqur Tuhin */}
                         <div className="flex flex-col items-center text-center p-6 bg-background dark:bg-slate-800 rounded-lg border border-transparent dark:border-slate-700 hover:border-red-200 dark:hover:border-red-900/50 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
                             <div className="w-32 h-32 rounded-full bg-slate-200 mb-4 overflow-hidden border-4 border-primary/10">
                                 <img
@@ -54,22 +69,6 @@ export default function AboutClient() {
                                     {t('tuhin_name_display')}
                                 </a>
                             </h3>
-                            <p className="text-sm font-medium text-primary dark:text-blue-400">{t('founder_role')}</p>
-                        </div>
-
-                        {/* Member 2: Sadiq M Alan */}
-                        <div className="flex flex-col items-center text-center p-6 bg-background dark:bg-slate-800 rounded-lg border border-transparent dark:border-slate-700 hover:border-red-200 dark:hover:border-red-900/50 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="w-32 h-32 rounded-full bg-slate-200 mb-4 overflow-hidden border-4 border-primary/10">
-                                <img
-                                    src="/images/sadiq.jpg"
-                                    alt="Sadiq M Alan"
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        e.currentTarget.src = "https://ui-avatars.com/api/?name=Sadiq+M+Alan&background=random&size=128"
-                                    }}
-                                />
-                            </div>
-                            <h3 className="text-xl font-bold dark:text-white">{t('sadiq_name')}</h3>
                             <p className="text-sm font-medium text-primary dark:text-blue-400">{t('cofounder_role')}</p>
                         </div>
                     </div>

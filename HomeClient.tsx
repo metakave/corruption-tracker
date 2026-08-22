@@ -126,6 +126,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
                             <a
                                 href="/map"
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
                                 title="Open Full Screen Map"
                             >
