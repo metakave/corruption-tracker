@@ -35,7 +35,7 @@ export const metadata: Metadata = {
         title: "About Us | Sadiq M Alam & Musfiqur Tuhin",
         description: "Meet the founders: Sadiq M Alam and Musfiqur Tuhin.",
         type: 'profile',
-        images: ['https://violencetracker.org/images/sadiq.jpg']
+        images: ['https://violencetracker.org/images/sadiq_circular.png']
     }
 }
 
@@ -58,7 +58,7 @@ export default function AboutPage() {
             "name": "Bangladesh Violence Tracker"
         },
         "url": "https://sadiqalam.com",
-        "image": "https://violencetracker.org/images/sadiq.jpg",
+        "image": "https://violencetracker.org/images/sadiq_circular.png",
         "sameAs": [
             "https://sadiqalam.com"
         ]

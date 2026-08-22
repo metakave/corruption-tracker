@@ -40,7 +40,7 @@ export default function AboutClient() {
                         <div className="flex flex-col items-center text-center p-6 bg-background dark:bg-slate-800 rounded-lg border border-transparent dark:border-slate-700 hover:border-red-200 dark:hover:border-red-900/50 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
                             <div className="w-32 h-32 rounded-full bg-slate-200 mb-4 overflow-hidden border-4 border-primary/10">
                                 <img
-                                    src="/images/sadiq.jpg"
+                                    src="/images/sadiq_circular.png"
                                     alt="Sadiq M Alam"
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
