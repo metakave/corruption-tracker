@@ -23,7 +23,7 @@ async function main() {
         totalArticles: 0,
         newArticles: 0,
         duplicates: 0,
-        violenceDetected: 0
+        corruptionDetected: 0
     }
     const errors: string[] = []
 

@@ -13,7 +13,7 @@ export class AjkerPatrikaScraper implements NewsSourceScraper {
     async scrape(dateLimit?: Date): Promise<ScrapedArticle[]> {
         console.log(`🚀 Starting ${this.name} Scraper (Hybrid Browser+API)... Limit: ${dateLimit ? dateLimit.toISOString() : '24h'}`)
 
-        const MAX_PROXY_ATTEMPTS = 20;
+        const MAX_PROXY_ATTEMPTS = 2;
         let proxyAttempt = 0;
         let allArticles: ScrapedArticle[] = [];
 

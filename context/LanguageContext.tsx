@@ -13,13 +13,17 @@ interface LanguageContextType {
 export const translations: Record<string, Record<Language, string>> = {
     // Branding & Identity
     'app_name': { bn: 'বাংলাদেশ দুর্নীতি ট্র্যাকার', en: 'Bangladesh Corruption Tracker' },
-    'app_name_violence': { bn: 'সহিংসতা', en: 'Violence' },
+    'app_name_violence': { bn: 'দুর্নীতি', en: 'Corruption' },
     'app_name_corruption': { bn: 'দুর্নীতি', en: 'Corruption' },
     'app_name_tracker': { bn: 'ট্র্যাকার', en: 'Tracker' },
-    'welcome_title': { bn: 'বাংলাদেশ পর্যবেক্ষণ ও তথ্য বিশ্লেষণ', en: 'Bangladesh Monitoring & Analytics' },
+    'app_site_title': { 
+        bn: 'বাংলাদেশ দুর্নীতি ট্র্যাকার | আর্থিক অনিয়ম ও দুর্নীতির রিয়েল-টাইম তথ্যভান্ডার', 
+        en: 'Bangladesh Corruption Tracker | Real-Time Financial Crime & Graft Intelligence' 
+    },
+    'welcome_title': { bn: 'বাংলাদেশ দুর্নীতি ও আর্থিক অপরাধ পর্যবেক্ষণ', en: 'Bangladesh Corruption & Financial Crime Intelligence' },
     'welcome_desc': { 
-        bn: 'বাংলাদেশের জাতীয় গণমাধ্যমে প্রকাশিত সংবাদ, অনিয়ম ও ঘটনার সার্বক্ষণিক ও স্বয়ংক্রিয় এআই তথ্যভান্ডার।', 
-        en: 'A continuous, automated, data-driven intelligence platform tracking documented incidents and records across Bangladesh.' 
+        bn: 'বাংলাদেশের জাতীয় গণমাধ্যমে প্রকাশিত দুর্নীতি, অর্থপাচার, ঋণ কেলেঙ্কারি ও আর্থিক অনিয়মের সার্বক্ষণিক ও স্বয়ংক্রিয় এআই তথ্যভান্ডার।', 
+        en: 'A continuous, automated, AI-driven intelligence platform tracking documented graft, financial crimes, and money laundering across Bangladesh.' 
     },
 
     // Language & System UI
@@ -36,13 +40,13 @@ export const translations: Record<string, Record<Language, string>> = {
     'loading': { bn: 'লোড হচ্ছে...', en: 'Loading...' },
     'none_recorded': { bn: 'কোনো তথ্য নেই', en: 'None recorded' },
     'no_incidents': { bn: 'কোনো ঘটনা পাওয়া যায়নি', en: 'No incidents found' },
-    'recent_incidents': { bn: 'সাম্প্রতিক ঘটনাবলী', en: 'Recent Incidents' },
+    'recent_incidents': { bn: 'সাম্প্রতিক দুর্নীতির ঘটনাবলী', en: 'Recent Corruption Incidents' },
     'latest_reports': { bn: 'তাজা সংবাদ ও প্রতিবেদন', en: 'Latest reports from monitored media' },
-    'live_incident_map': { bn: 'লাইভ ঘটনার মানচিত্র', en: 'Live Incident Map' },
+    'live_incident_map': { bn: 'লাইভ দুর্নীতির মানচিত্র', en: 'Live Corruption Incident Map' },
     'live_updates': { bn: 'সার্বক্ষণিক আপডেট', en: 'Live updates' },
-    'deadliest_7days': { bn: 'গত ৭ দিনের সর্বাধিক প্রাণঘাতী', en: 'Deadliest in 7 Days' },
+    'deadliest_7days': { bn: 'গত ৭ দিনের সর্বাধিক আলোচিত', en: 'Top Highlighted in 7 Days' },
     'killed': { bn: 'জন নিহত', en: 'killed' },
-    'high_risk_zone': { bn: 'উচ্চ ঝুঁকিপূর্ণ জেলা', en: 'High Risk Zone' },
+    'high_risk_zone': { bn: 'সর্বাধিক দুর্নীতি প্রবণ জেলা', en: 'High Corruption Zone' },
     'incidents_7d': { bn: 'টি ঘটনা (গত ৭ দিন)', en: 'incidents (last 7d)' },
     'map_popup_district_title': { bn: 'টি ঘটনা এই জেলায়', en: 'incidents in this district' },
     'click_to_see_categories': { bn: 'ক্যাটেগরি দেখতে ক্লিক করুন', en: 'Click to view categories' },
@@ -68,7 +72,8 @@ export const translations: Record<string, Record<Language, string>> = {
     'about': { bn: 'আমাদের সম্পর্কে', en: 'About Us' },
     'faq': { bn: 'সাধারণ জিজ্ঞাসা', en: 'FAQ' },
     'map': { bn: 'মানচিত্র', en: 'Map' },
-    'business': { bn: 'ব্যবসা ও এন্টারপ্রাইজ সেবা', en: 'Services & Enterprise' },
+    'business': { bn: 'কারিগরি সহযোগিতা', en: 'Technical Collaboration' },
+    'technical_collaboration': { bn: 'কারিগরি সহযোগিতা', en: 'Technical Collaboration' },
     'download_data': { bn: 'ডাটা ডাউনলোড', en: 'Download Data' },
 
     // Status & Dashboard Counters
@@ -108,57 +113,45 @@ export const translations: Record<string, Record<Language, string>> = {
 
     // Reports & Analytics
     'reports_section_title': { bn: 'বিশেষ বিশ্লেষণ ও প্রতিবেদন', en: 'Special Research & Reports' },
-    'jan_2026_full_title': { bn: 'জানুয়ারি ২০২৬ সহিংসতা পর্যবেক্ষণ প্রতিবেদন (পূর্ণাঙ্গ)', en: 'January 2026 Violence Monitoring Report (Full)' },
-    'jan_2026_full_desc': { bn: 'জানুয়ারি মাসের সকল রাজনৈতিক, সাম্প্রদায়িক ও নির্বাচনী সহিংসতার পূর্ণাঙ্গ তথ্যচিত্র ও ক্যাটেগরিভিত্তিক পরিসংখ্যান।', en: 'Comprehensive data-driven breakdown of political, communal, and election violence in January.' },
+    'jan_2026_full_title': { bn: 'জানুয়ারি ২০২৬ দুর্নীতি পর্যবেক্ষণ প্রতিবেদন (পূর্ণাঙ্গ)', en: 'January 2026 Corruption Monitoring Report (Full)' },
+    'jan_2026_full_desc': { bn: 'জানুয়ারি মাসের সকল আর্থিক অনিয়ম, অর্থপাচার ও দুর্নীতির পূর্ণাঙ্গ তথ্যচিত্র ও খাতভিত্তিক পরিসংখ্যান।', en: 'Comprehensive data-driven breakdown of graft, embezzlement, and financial crimes in January.' },
     'read_report': { bn: 'প্রতিবেদনটি পড়ুন', en: 'Read Report' },
     'jan_2026_summary_title': { bn: 'জানুয়ারি ২০২৬ নির্বাহী সারসংক্ষেপ', en: 'January 2026 Executive Summary' },
-    'jan_2026_summary_desc': { bn: 'নীতি-নির্ধারক ও গবেষকদের জন্য জানুয়ারি ২০২৬-এর প্রধান পর্যবেক্ষণ ও তাৎক্ষণিক সারসংক্ষেপ।', en: 'Key takeaways, policy highlights, and high-level summaries of January 2026 incidents.' },
+    'jan_2026_summary_desc': { bn: 'নীতি-নির্ধারক ও গবেষকদের জন্য জানুয়ারি ২০২৬-এর প্রধান দুর্নীতি পর্যবেক্ষণ ও তাৎক্ষণিক সারসংক্ষেপ।', en: 'Key takeaways, policy highlights, and high-level summaries of January 2026 graft incidents.' },
 
     // About Us Page
     'about_page_title': { bn: 'আমাদের সম্পর্কে', en: 'About Us' },
-    'about_page_subtitle': { bn: 'উন্মুক্ত তথ্য ও এআই প্রযুক্তির মাধ্যমে সত্য ও জবাবদিহিতা নিশ্চিতকরণ', en: 'Ensuring Truth and Accountability through Open Data & AI Technology' },
-    'about_intro_text': { bn: 'বাংলাদেশ ট্র্যাকার একটি স্বাধীন, অরাজনৈতিক ও উন্মুক্ত ডাটা প্ল্যাটফর্ম। কৃত্রিম বুদ্ধিমত্তা ও গণমাধ্যম ক্রলিংয়ের মাধ্যমে আমরা জাতীয় ঘটনাবলীকে নিরপেক্ষভাবে সংরক্ষণ ও বিশ্লেষণ করি।', en: 'Bangladesh Tracker is an independent, non-partisan, open-data intelligence platform that neutrally archives and analyzes national incidents using AI and real-time news scraping.' },
+    'about_page_subtitle': { bn: 'উন্মুক্ত তথ্য ও এআই প্রযুক্তির মাধ্যমে আর্থিক স্বচ্ছতা ও জবাবদিহিতা নিশ্চিতকরণ', en: 'Ensuring Financial Transparency & Public Accountability through Open Data and AI Technology' },
+    'about_intro_text': { bn: 'বাংলাদেশ দুর্নীতি ট্র্যাকার একটি স্বাধীন, অরাজনৈতিক ও উন্মুক্ত ডাটা প্ল্যাটফর্ম। কৃত্রিম বুদ্ধিমত্তা ও গণমাধ্যম ক্রলিংয়ের মাধ্যমে আমরা জাতীয় দুর্নীতির ঘটনাবলীকে নিরপেক্ষভাবে সংরক্ষণ ও বিশ্লেষণ করি।', en: 'Bangladesh Corruption Tracker is an independent, non-partisan, open-data intelligence platform that neutrally archives and analyzes national financial crimes and graft using AI and real-time news scraping.' },
     'our_identity_title': { bn: 'আমরা কারা', en: 'Who We Are' },
-    'our_identity_desc': { bn: 'আমরা একদল গবেষক, প্রকৌশলী ও তথ্য অধিকার কর্মী, যারা প্রযুক্তির সহায়তায় তথ্যের স্বচ্ছতা ও সার্বজনীন প্রবেশাধিকার নিশ্চিত করতে অঙ্গীকারবদ্ধ।', en: 'We are a dedicated team of researchers, software engineers, and civic data advocates committed to information transparency and universal open access.' },
+    'our_identity_desc': { bn: 'আমরা একদল গবেষক, ডেটা প্রকৌশলী ও সুশাসন কর্মী, যারা প্রযুক্তির সহায়তায় আর্থিক তথ্যের স্বচ্ছতা ও সার্বজনীন প্রবেশাধিকার নিশ্চিত করতে অঙ্গীকারবদ্ধ।', en: 'We are a dedicated team of researchers, software engineers, and anti-corruption data advocates committed to financial transparency and universal open access.' },
     'tuhin_name_display': { bn: 'মুশফিকুর তুহিন', en: 'Musfiqur Tuhin' },
     'founder_role': { bn: 'প্রতিষ্ঠাতা ও হেড অব আইডিয়াজ', en: 'Founder & Head of Ideas' },
     'sadiq_name': { bn: 'সাদিক এম আলম', en: 'Sadiq M Alam' },
     'cofounder_role': { bn: 'সহ-প্রতিষ্ঠাতা ও প্রধান প্রকৌশলী', en: 'Co-Founder & Lead Engineer' },
     'what_is_vt_title': { bn: 'প্ল্যাটফর্মের মূল উদ্দেশ্য কী?', en: 'What is This Platform?' },
-    'what_is_vt_desc': { bn: 'বাংলাদেশের নির্ভরযোগ্য মূলধারার গণমাধ্যমে প্রকাশিত সংবাদসমূহ স্বয়ংক্রিয়ভাবে সংগ্রহ করে একটি যাচাইকৃত ও কাঠামোগত ডাটাবেজ গড়ে তোলা, যাতে যে কেউ স্বাধীনভাবে গবেষণা ও অনুসন্ধান করতে পারে।', en: 'An automated pipeline ingesting verified reporting from mainstream Bangladeshi news outlets into a structured, queryable database for researchers, journalists, and citizens.' },
+    'what_is_vt_desc': { bn: 'বাংলাদেশের নির্ভরযোগ্য মূলধারার গণমাধ্যমে প্রকাশিত দুর্নীতি ও আর্থিক অপরাধের সংবাদসমূহ স্বয়ংক্রিয়ভাবে সংগ্রহ করে একটি যাচাইকৃত ও কাঠামোগত ডাটাবেজ গড়ে তোলা, যাতে যে কেউ স্বাধীনভাবে গবেষণা ও অনুসন্ধান করতে পারে।', en: 'An automated pipeline ingesting verified reporting from mainstream Bangladeshi news outlets into a structured, queryable corruption database for researchers, journalists, and citizens.' },
     'how_it_works_title': { bn: 'এটি কীভাবে কাজ করে?', en: 'How It Works' },
     'how_it_works_desc': { bn: 'প্ল্যাটফর্মটি তিন স্তরের একটি স্বয়ংক্রিয় পাইপলাইনের মাধ্যমে পরিচালিত হয়:', en: 'The platform operates through a 3-tier automated intelligence pipeline:' },
     'step_1_title': { bn: '১. রিয়েল-টাইম তথ্য সংগ্রহ (Crawling)', en: '1. Real-Time News Ingestion (Crawling)' },
     'step_1_desc': { bn: 'জাতীয় শীর্ষ সংবাদমাধ্যমগুলো থেকে প্রতি কয়েক ঘণ্টায় স্বয়ংক্রিয়ভাবে তাজা খবর সংগ্রহ করা হয়।', en: 'Automated scrapers crawl major Bangladeshi national newspapers every few hours.' },
-    'step_2_title': { bn: '২. এআই বিশ্লেষণ ও শ্রেণিবিন্যাস (AI NLP)', en: '2. AI Analysis & Structuring (NLP)' },
-    'step_2_desc': { bn: 'উন্নত লার্জ ল্যাঙ্গুয়েজ মডেল (LLM) সংবাদের সত্যতা যাচাই, ক্যাটেগরি নির্ধারণ, হতাহতের সংখ্যা ও স্থান আলাদা করে।', en: 'State-of-the-art LLMs extract verified facts, classify incident types, casualties, involved entities, and geolocations.' },
+    'step_2_title': { bn: '২. এআই বিশ্লেষণ ও আর্থিক মূল্যায়ন (AI NLP)', en: '2. AI Analysis & Financial Structuring (NLP)' },
+    'step_2_desc': { bn: 'উন্নত লার্জ ল্যাঙ্গুয়েজ মডেল (LLM) সংবাদের সত্যতা যাচাই, দুর্নীতির খাত নির্ধারণ, জড়িত ব্যক্তি/প্রতিষ্ঠান, অর্থের পরিমাণ ও আইনি অবস্থা আলাদা করে।', en: 'State-of-the-art LLMs extract verified facts, classify corruption categories, financial loss in BDT, accused entities, and legal investigation status.' },
     'step_3_title': { bn: '৩. উন্মুক্ত প্রকাশ ও ম্যাপিং (Open Data)', en: '3. Open Data & Visualization' },
     'step_3_desc_pre_bold': { bn: 'যাচাইকৃত তথ্যগুলো তাৎক্ষণিকভাবে ', en: 'Structured datasets are immediately published via ' },
     'step_3_bold': { bn: 'ইন্টারেক্টিভ মানচিত্র ও ডাটাবেজে', en: 'Interactive Maps & Searchable Tables' },
     'step_3_desc_post_bold': { bn: ' সবার জন্য উন্মুক্ত করা হয়।', en: ' for universal open access.' },
-    'automated_quote': { bn: '“স্বচ্ছতা ও তথ্যের অবাধ প্রবাহই সুশাসন ও ন্যায়বিচারের মূল ভিত্তি।”', en: '“Transparency and open access to data are the cornerstones of accountability and justice.”' },
+    'automated_quote': { bn: '“আর্থিক স্বচ্ছতা ও তথ্যের অবাধ প্রবাহই সুশাসন ও ন্যায়ের মূল ভিত্তি।”', en: '“Financial transparency and open data access are the cornerstones of accountability and good governance.”' },
     'use_cases_title': { bn: 'কাদের জন্য এই প্ল্যাটফর্ম?', en: 'Who Can Use This Platform?' },
-    'researcher_title': { bn: 'গবেষক ও সাংবাদিক', en: 'Researchers & Journalists' },
-    'researcher_desc': { bn: 'তথ্যভিত্তিক প্রতিবেদন তৈরি ও দীর্ঘমেয়াদী গবেষণার জন্য নিখুঁত ডাটা ও ফিল্টারিং সুবিধা।', en: 'Structured historical data and granular filters for evidence-based reporting and academic studies.' },
-    'political_party_title': { bn: 'পলিসি মেকার ও প্রতিষ্ঠান', en: 'Policy Makers & Institutions' },
-    'political_party_desc': { bn: 'খাতভিত্তিক প্রবণতা পর্যবেক্ষণ করে ঝুঁকি মূল্যায়ন ও নীতিগত সিদ্ধান্ত গ্রহণ।', en: 'Evidence-backed trend monitoring for risk assessment and policy formulating.' },
-    'human_rights_title': { bn: 'মানবাধিকার সংস্থা', en: 'Human Rights & Civil Society' },
-    'human_rights_desc': { bn: 'সতর্কতা পর্যবেক্ষণ ও ভুক্তভোগীদের সহায়তায় সঠিক পরিসংখ্যান নিরীক্ষা।', en: 'Real-time monitoring and empirical statistics to support advocacy and justice.' },
-    'law_enforcement_title': { bn: 'আইনজীবী ও পর্যবেক্ষক', en: 'Legal Experts & Observers' },
-    'law_enforcement_desc': { bn: 'ঘটনার স্থান, তারিখ ও সংশ্লিষ্ট সূত্রের পূর্ণ বিবরণ যাচাই।', en: 'Access verified timestamps, original media sources, and geographic breakdown.' },
-    'general_public_title': { bn: 'সাধারণ নাগরিক', en: 'General Public' },
-    'general_public_desc': { bn: 'নিজের এলাকা ও দেশের সার্বিক পরিস্থিতি সম্পর্কে নির্ভরযোগ্য তথ্য জানা।', en: 'Stay informed with reliable, factual data about incidents in your locality.' },
+    'human_rights_title': { bn: 'দুর্নীতি বিরোধী সংস্থা ও সুশীল সমাজ', en: 'Anti-Corruption Bodies & Civil Society' },
+    'human_rights_desc': { bn: 'দুর্নীতির প্রবণতা পর্যবেক্ষণ, নীতি সংস্কার ও আর্থিক অডিট বিশ্লেষণে সহায়ক সঠিক পরিসংখ্যান।', en: 'Empirical datasets to support policy advocacy, institutional audits, and anti-graft research.' },
+    'law_enforcement_title': { bn: 'তদন্তকারী সংস্থা ও আইনজীবী', en: 'Investigative Agencies & Legal Observers' },
+    'law_enforcement_desc': { bn: 'অভিযোগ, দুদকের অনুসন্ধান, চার্জশিট ও মামলার অবস্থা ট্র্যাক করার সুনির্দিষ্ট তথ্য।', en: 'Track verified allegations, ACC inquiries, chargesheets, and judicial progress across sectors.' },
+    'general_public_title': { bn: 'সাধারণ নাগরিক ও অনুসন্ধানী সাংবাদিক', en: 'Investigative Journalists & Citizens' },
+    'general_public_desc': { bn: 'সরকারি প্রকল্পের অপব্যবহার, ব্যাংক কেলেঙ্কারি ও জনসাধারণের তহবিলের সঠিক চিত্র জানা।', en: 'Investigate public fund allocations, banking irregularities, and district-level governance.' },
     'data_terms_title': { bn: 'তথ্যের উৎস ও নীতিমালা', en: 'Data Source & Disclaimer' },
     'data_terms_desc': { bn: 'প্ল্যাটফর্মের সকল তথ্য মূলধারার শীর্ষ গণমাধ্যম থেকে সরাসরি উদ্ধৃত। প্রতিটি তথ্যের সাথে মূল সংবাদের লিঙ্ক সংযুক্ত রয়েছে।', en: 'All data is aggregated transparently from accredited national news sources, citing direct attribution and original canonical links.' },
 
-    // Business & Services Page
-    'business_hero_title': { bn: 'ডাটা স্ক্র্যাপিং, এআই বিশ্লেষণ ও অটোমেশন সমাধান', en: 'Data Scraping, AI Intelligence & Automation Solutions' },
-    'business_hero_desc': { bn: 'আমরা ব্যবসা প্রতিষ্ঠান, গবেষণা সংস্থা ও সরকারি-বেসরকারি উদ্যোগের জন্য কাস্টম এআই এবং ডাটা পাইপলাইন তৈরি করি।', en: 'We build production-grade web scrapers, custom AI NLP pipelines, and interactive analytics dashboards for organizations worldwide.' },
-    'contact_consultation': { bn: 'পরামর্শের জন্য যোগাযোগ করুন', en: 'Get in Touch on WhatsApp' },
-    'what_we_build': { bn: 'আমাদের সেবাসমূহ', en: 'What We Build' },
-    'services_desc': { bn: 'আপনার প্রতিষ্ঠানের তথ্যের প্রয়োজনীয়তায় আধুনিক ও শক্তিশালী প্রযুক্তিগত সমাধান।', en: 'End-to-end data infrastructure and intelligent processing tailored to your workflow.' },
-    'custom_scrapers': { bn: 'কাস্টম ওয়েব স্ক্র্যাপিং ও ক্রলিং', en: 'High-Volume Web Crawlers' },
-    'scrapers_desc': { bn: 'যেকোনো ওয়েবসাইট, পোর্টাল বা গণমাধ্যম থেকে রিয়েল-টাইম তথ্য সংগ্রহের স্বয়ংক্রিয় রোবট।', en: 'Fault-tolerant, automated crawlers engineered for real-time aggregation across complex web portals.' },
     'ai_nlp_tools': { bn: 'এআই ও এলএলএম ডেভলপমেন্ট', en: 'AI & LLM Data Structuring' },
     'ai_desc': { bn: 'অবিন্যস্ত টেক্সট ও খবর থেকে স্বয়ংক্রিয়ভাবে তথ্য উদ্ধার, সারসংক্ষেপ তৈরি ও শ্রেণিবিন্যাস।', en: 'Extract structured facts, perform entity recognition, summarize reports, and classify noisy unstructured text.' },
     'analytics_dashboards': { bn: 'ইন্টারেক্টিভ ড্যাশবোর্ড ও ম্যাপ', en: 'Interactive Analytics & Maps' },
@@ -263,6 +256,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
             setLanguage(saved)
         }
     }, [])
+
+    useEffect(() => {
+        if (typeof document !== 'undefined') {
+            document.title = language === 'bn'
+                ? 'বাংলাদেশ দুর্নীতি ট্র্যাকার | আর্থিক অনিয়ম ও দুর্নীতির রিয়েল-টাইম তথ্যভান্ডার'
+                : 'Bangladesh Corruption Tracker | Real-Time Financial Crime & Graft Intelligence'
+        }
+    }, [language])
 
     const handleSetLanguage = (lang: Language) => {
         setLanguage(lang)

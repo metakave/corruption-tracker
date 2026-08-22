@@ -26,14 +26,26 @@ const notoBengali = Noto_Serif_Bengali({
 });
 
 export const metadata: Metadata = {
-  title: "Bangladesh Violence Tracker | Real-Time Political & Social Incident Map",
-  description: "The leading platform for monitoring political violence, election unrest, and violence against women in Bangladesh. Access verified reports, real-time data maps, and media analysis for a safer 'New Bangladesh.'",
-  keywords: ["Political violence in Bangladesh", "Bangladesh political unrest", "Election violence monitoring", "Violence against women reporting", "Political clash news"],
+  title: {
+    template: "%s | Bangladesh Corruption Tracker",
+    default: "Bangladesh Corruption Tracker | Real-Time Financial Crime & Graft Intelligence",
+  },
+  description: "The leading open-data platform for monitoring corruption, fund embezzlement, bank loan scams, tender fraud, and money laundering across Bangladesh. Powered by autonomous AI news intelligence.",
+  keywords: [
+    "Bangladesh corruption tracker",
+    "Bangladesh financial crime intelligence",
+    "Anti-corruption commission ACC Bangladesh",
+    "Bank loan scam Bangladesh",
+    "Money laundering Bangladesh news",
+    "Tender fraud public procurement Bangladesh",
+    "বাংলাদেশ দুর্নীতি ট্র্যাকার",
+    "দুদক মামলা ও অর্থপাচার"
+  ],
   openGraph: {
-    title: "Bangladesh Violence Tracker",
-    description: "Real-time monitoring of political and social incidents in Bangladesh.",
-    url: "https://violencetracker.org",
-    siteName: "Violence Tracker BD",
+    title: "Bangladesh Corruption Tracker | Real-Time Financial Crime Intelligence",
+    description: "Empirical, AI-driven monitoring of public fund embezzlement, graft, and corporate irregularities in Bangladesh.",
+    url: "https://corruptiontracker.org",
+    siteName: "Bangladesh Corruption Tracker",
     locale: "bn_BD",
     type: "website",
   },

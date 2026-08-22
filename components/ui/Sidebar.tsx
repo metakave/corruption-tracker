@@ -2,21 +2,36 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, Table as TableIcon, BarChart3, Info, Map, ShieldAlert, Building2 } from 'lucide-react'
+import { 
+    LayoutDashboard, 
+    Table as TableIcon, 
+    BarChart3, 
+    Info, 
+    Map, 
+    ShieldAlert, 
+    Radio, 
+    Download, 
+    HelpCircle, 
+    Briefcase 
+} from 'lucide-react'
 import { useLanguage } from '@/context/LanguageContext'
 
 export default function DashboardSidebar() {
     const pathname = usePathname()
-    const { t } = useLanguage()
+    const { t, language } = useLanguage()
 
     if (pathname === '/map') return null
 
     const navItems = [
         { nameKey: 'dashboard', href: '/', icon: LayoutDashboard },
+        { nameKey: 'live_feed', href: '/feed', icon: Radio },
         { nameKey: 'map', href: '/map', icon: Map },
-        { nameKey: 'analytics', href: '/statistics', icon: BarChart3 },
+        { nameKey: 'analytics', href: '/analytics', icon: BarChart3 },
         { nameKey: 'data_table', href: '/data', icon: TableIcon },
+        { nameKey: 'download_data', href: '/download', icon: Download },
+        { nameKey: 'faq', href: '/faq', icon: HelpCircle },
         { nameKey: 'about', href: '/about', icon: Info },
+        { nameKey: 'technical_collaboration', href: '/business', icon: Briefcase },
     ]
 
     return (
@@ -28,9 +43,15 @@ export default function DashboardSidebar() {
                 </div>
                 <div>
                     <h2 className="font-extrabold text-sm text-zinc-900 dark:text-white leading-tight">
-                        বাংলাদেশ <span className="text-emerald-600 dark:text-emerald-400">দুর্নীতি</span>
+                        {language === 'bn' ? (
+                            <>বাংলাদেশ <span className="text-emerald-600 dark:text-emerald-400">দুর্নীতি</span> ট্র্যাকার</>
+                        ) : (
+                            <>Bangladesh <span className="text-emerald-600 dark:text-emerald-400">Corruption</span> Tracker</>
+                        )}
                     </h2>
-                    <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-400">Corruption Tracker</p>
+                    <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-400">
+                        {language === 'bn' ? 'আর্থিক গোয়েন্দা বিশ্লেষণ' : 'Financial Intelligence'}
+                    </p>
                 </div>
             </div>
 
@@ -49,10 +70,12 @@ export default function DashboardSidebar() {
                             className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${
                                 isActive
                                     ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold'
+                                    : item.nameKey === 'technical_collaboration'
+                                    ? 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 font-medium'
                                     : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white'
                             }`}
                         >
-                            <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400'}`} />
+                            <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : item.nameKey === 'technical_collaboration' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400'}`} />
                             <span>{t(item.nameKey)}</span>
                         </Link>
                     )

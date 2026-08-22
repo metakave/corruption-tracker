@@ -110,7 +110,7 @@ export default function DashboardNavbar() {
                                         />
                                     </div>
                                     <span className={`text-gray-900 dark:text-white text-xl whitespace-nowrap ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        <span className="text-red-600 dark:text-red-500">{t('app_name_violence')}</span> {t('app_name_tracker')}
+                                        <span className="text-emerald-600 dark:text-emerald-400">{t('app_name_corruption')}</span> {t('app_name_tracker')}
                                     </span>
                                 </Link>
                             </div>
@@ -236,7 +236,7 @@ export default function DashboardNavbar() {
                         />
                     </div>
                     <h2 className={`text-sm font-semibold text-gray-800 dark:text-white truncate max-w-[140px] leading-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        <span className="text-emerald-600 dark:text-emerald-400 block sm:inline">{t('app_name_violence')}</span> {t('app_name_tracker')}
+                        <span className="text-emerald-600 dark:text-emerald-400 block sm:inline">{t('app_name_corruption')}</span> {t('app_name_tracker')}
                     </h2>
                 </Link>
 
