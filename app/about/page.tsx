@@ -2,19 +2,19 @@ import type { Metadata } from 'next'
 import AboutClient from './AboutClient'
 
 export const metadata: Metadata = {
-    title: "About Us | Sadiq Mohammad Alam & Md. Musfiqur Rahman (Tuhin)",
-    description: "Learn about the team behind Bangladesh Violence Tracker. Founded by Sadiq Mohammad Alam and Md. Musfiqur Rahman (Tuhin) to monitor political and social violence using AI.",
+    title: "About Us | Sadiq M Alam & Musfiqur Tuhin",
+    description: "Learn about the team behind Bangladesh Violence Tracker. Founded by Sadiq M Alam and Musfiqur Tuhin to monitor political and social violence using AI.",
     keywords: [
         // Core Project Keywords
         "Bangladesh Violence Tracker", "Political Violence Data", "Election Violence Monitoring",
 
-        // Person 1: Sadiq Mohammad Alam - Variations
-        "Sadiq Mohammad Alam", "Sadiq M Alam", "Sadiq Alam", "Sadik Mohammad Alam",
+        // Person 1: Sadiq M Alam - Variations
+        "Sadiq M Alam", "Sadiq Mohammad Alam", "Sadiq Alam", "Sadik Mohammad Alam",
         "Sadik Alam", "Sadeq Alam", "Sadiqur Rahman", "Sadiq M. Alam", "M. Sadiq Alam",
         "Sadiq Mohammad", "Sadik M Alam", "Sadik M. Alam",
 
         // Person 1: Bangla Variations
-        "সাদিক মোহাম্মদ আলম", "সাদিক আলম", "সাদিক এম আলম", "মোহাম্মদ সাদিক", "সাদিক মোহাম্মদ",
+        "সাদিক এম আলম", "সাদিক মোহাম্মদ আলম", "সাদিক আলম", "মোহাম্মদ সাদিক", "সাদিক মোহাম্মদ",
         "সাদিকুর রহমান", "সাদেক আলম",
 
         // Person 2: Md. Musfiqur Rahman (Tuhin) - Variations
@@ -32,33 +32,36 @@ export const metadata: Metadata = {
         "তুহিন", "মুশফিক"
     ],
     openGraph: {
-        title: "About Us | Sadiq Mohammad Alam & Md. Musfiqur Rahman (Tuhin)",
-        description: "Meet the founders: Sadiq Mohammad Alam and Md. Musfiqur Rahman (Tuhin).",
+        title: "About Us | Sadiq M Alam & Musfiqur Tuhin",
+        description: "Meet the founders: Sadiq M Alam and Musfiqur Tuhin.",
         type: 'profile',
         images: ['https://violencetracker.org/images/sadiq.jpg']
     }
 }
 
 export default function AboutPage() {
-    // Person 1 Schema: Sadiq Mohammad Alam
+    // Person 1 Schema: Sadiq M Alam
     const sadiqSchema = {
         "@context": "https://schema.org",
         "@type": "Person",
-        "name": "Sadiq Mohammad Alam",
+        "name": "Sadiq M Alam",
         "alternateName": [
-            "Sadiq M Alam", "Sadiq Alam", "Sadik Mohammad Alam", "Sadik Alam",
+            "Sadiq Mohammad Alam", "Sadiq Alam", "Sadik Mohammad Alam", "Sadik Alam",
             "Sadeq Alam", "Sadiqur Rahman", "Sadiq M. Alam", "M. Sadiq Alam",
             "Sadiq Mohammad", "Sadik M Alam", "Sadik M. Alam",
-            "সাদিক মোহাম্মদ আলম", "সাদিক আলম", "সাদিক এম আলম", "মোহাম্মদ সাদিক",
+            "সাদিক এম আলম", "সাদিক মোহাম্মদ আলম", "সাদিক আলম", "মোহাম্মদ সাদিক",
             "সাদিক মোহাম্মদ", "সাদিকুর রহমান", "সাদেক আলম"
         ],
-        "jobTitle": "Founder",
+        "jobTitle": "Founder & Head of Ideas",
         "worksFor": {
             "@type": "Organization",
             "name": "Bangladesh Violence Tracker"
         },
+        "url": "https://sadiqalam.com",
         "image": "https://violencetracker.org/images/sadiq.jpg",
-        "sameAs": [] // Add links if available
+        "sameAs": [
+            "https://sadiqalam.com"
+        ]
     }
 
     // Person 2 Schema: Md. Musfiqur Rahman (Tuhin)
@@ -76,7 +79,7 @@ export default function AboutPage() {
             "মুসফিক তুহিন", "মোঃ মুসফিকুর রহমান", "মো: মুশফিকুর রহমান", "মুশফিকুর রাহমান",
             "তুহিন", "মুশফিক"
         ],
-        "jobTitle": "Co-Founder",
+        "jobTitle": "Co-Founder & Lead Engineer",
         "worksFor": {
             "@type": "Organization",
             "name": "Bangladesh Violence Tracker"
