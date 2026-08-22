@@ -10,7 +10,7 @@ export async function GET(request: Request) {
         const search = searchParams.get('search')
         const district = searchParams.get('district')
         const sector = searchParams.get('sector')
-        const category = searchParams.get('category')
+        const category = searchParams.get('category') || searchParams.get('type')
         const status = searchParams.get('status')
         const source = searchParams.get('source')
         const startDate = searchParams.get('startDate')
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
         const maxAmount = searchParams.get('maxAmount')
 
         const page = parseInt(searchParams.get('page') || '1')
-        const limit = parseInt(searchParams.get('limit') || '50')
+        const limit = parseInt(searchParams.get('limit') || '20')
         const skip = (page - 1) * limit
 
         const andConditions: any[] = [
@@ -86,12 +86,21 @@ export async function GET(request: Request) {
             prisma.corruptionEvent.count({ where })
         ])
 
+        const totalPages = Math.ceil(total / limit) || 1
+
         return NextResponse.json({
             events,
+            data: events,
             total,
             page,
             limit,
-            totalPages: Math.ceil(total / limit)
+            totalPages,
+            metadata: {
+                total,
+                page,
+                limit,
+                totalPages
+            }
         })
     } catch (error: any) {
         console.error('Error fetching corruption events:', error)

@@ -6,25 +6,31 @@ import { TableFilters } from '@/components/table-filters'
 import { ColumnDef } from '@tanstack/react-table'
 
 import Link from 'next/link'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, ShieldAlert, Building2, User, Landmark, Scale } from 'lucide-react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
 import { BD_DISTRICTS } from '@/lib/constants'
 import { formatDate } from '@/lib/utils'
+import { useLanguage } from '@/context/LanguageContext'
 
-type PoliticalEvent = {
+export type CorruptionEvent = {
     id: string
     title: string
+    summary: string | null
     dateOfIncident: string | null
     publishedAt: string
     district: string | null
-    incident_type: string
-    killed: number
-    injured: number
+    locationText: string | null
+    category: string
+    sectorOrMinistry: string | null
+    amountInvolved: number | null
+    amountFormatted: string | null
+    accusedEntities: string | null
+    investigatingAgency: string | null
+    legalStatus: string | null
     severityScore: number
     url: string
-    tags: string
-    politicalParties: string | null
+    tags: string | null
     additionalSources: string | null
     source: string | null
 }
@@ -33,19 +39,20 @@ function DataContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const pathname = usePathname()
+    const { t } = useLanguage()
 
     // Initialize from URL
     const initialFilters = {
         search: searchParams.get('search') || '',
         district: searchParams.get('district') || 'All',
-        type: searchParams.get('type') || 'All',
-        minSeverity: searchParams.get('minSeverity') || '',
-        timeRange: searchParams.get('timeRange') || 'all', // Note: we're doing local mapping for logic
-        partyCategory: searchParams.get('partyCategory') || 'All',
+        category: searchParams.get('category') || searchParams.get('type') || 'All',
+        sector: searchParams.get('sector') || 'All',
+        status: searchParams.get('status') || 'All',
+        timeRange: searchParams.get('timeRange') || 'all',
         source: searchParams.get('source') || 'All'
     }
 
-    const [data, setData] = useState<PoliticalEvent[]>([])
+    const [data, setData] = useState<CorruptionEvent[]>([])
     const [loading, setLoading] = useState(true)
 
     // Pagination State
@@ -68,40 +75,36 @@ function DataContent() {
     useEffect(() => {
         const params = new URLSearchParams(searchParams)
 
-        // Update params based on filters
         if (filters.search) params.set('search', filters.search)
         else params.delete('search')
 
         if (filters.district !== 'All') params.set('district', filters.district)
         else params.delete('district')
 
-        if (filters.type !== 'All') params.set('type', filters.type)
-        else params.delete('type')
+        if (filters.category !== 'All') params.set('category', filters.category)
+        else params.delete('category')
 
-        if (filters.partyCategory !== 'All') params.set('partyCategory', filters.partyCategory)
-        else params.delete('partyCategory')
+        if (filters.sector !== 'All') params.set('sector', filters.sector)
+        else params.delete('sector')
+
+        if (filters.status !== 'All') params.set('status', filters.status)
+        else params.delete('status')
 
         if (filters.source !== 'All') params.set('source', filters.source)
         else params.delete('source')
-
-        if (filters.minSeverity) params.set('minSeverity', filters.minSeverity)
-        else params.delete('minSeverity')
 
         if (filters.timeRange !== 'all') params.set('timeRange', filters.timeRange)
         else params.delete('timeRange')
 
         params.set('page', page.toString())
 
-        // Replace URL without reloading
         router.replace(`${pathname}?${params.toString()}`, { scroll: false })
     }, [filters, page])
-
 
     // Fetch Data
     const fetchData = async () => {
         setLoading(true)
         try {
-            // Calculate Date Range
             let start = null
             let end = null
             const now = new Date()
@@ -130,33 +133,30 @@ function DataContent() {
                 ...filters
             })
 
-            // Add date params
             if (start) params.append('startDate', start.toISOString())
             if (end) params.append('endDate', end.toISOString())
 
-            // Remove empty filters
             if (filters.district === 'All') params.delete('district')
-            if (filters.type === 'All') params.delete('type')
-            if (filters.partyCategory === 'All') params.delete('partyCategory')
+            if (filters.category === 'All') params.delete('category')
+            if (filters.sector === 'All') params.delete('sector')
+            if (filters.status === 'All') params.delete('status')
             if (filters.source === 'All') params.delete('source')
             if (!filters.search) params.delete('search')
-            if (!filters.minSeverity) params.delete('minSeverity')
-            params.delete('timeRange') // Don't send this raw param to API
+            params.delete('timeRange')
 
             const res = await fetch(`/api/events?${params}`)
             const json = await res.json()
 
-            if (json.data && Array.isArray(json.data)) {
-                setData(json.data)
-                setTotalPages(json.metadata?.totalPages || 1)
-                setTotalItems(json.metadata?.total || 0)
-            } else {
-                setData([])
-                setTotalPages(1)
-                setTotalItems(0)
-            }
+            const list = json.data || json.events || []
+            const total = json.metadata?.total ?? json.total ?? 0
+            const pages = json.metadata?.totalPages ?? json.totalPages ?? 1
+
+            setData(Array.isArray(list) ? list : [])
+            setTotalPages(pages)
+            setTotalItems(total)
         } catch (error) {
             console.error("Error fetching data:", error)
+            setData([])
         } finally {
             setLoading(false)
         }
@@ -167,264 +167,228 @@ function DataContent() {
             fetchData()
         }, 300)
         return () => clearTimeout(debounce)
-    }, [page, filters]) // Re-fetch on filter/page change
-
+    }, [page, filters])
 
     // Columns Definition
-    const columns: ColumnDef<PoliticalEvent>[] = [
+    const columns: ColumnDef<CorruptionEvent>[] = [
         {
-            accessorKey: 'dateOfIncident',
-            header: 'Incident Date',
+            accessorKey: 'title',
+            header: 'দুর্নীতি ও আর্থিক অনিয়ম (Incident & Summary)',
             cell: ({ row }) => {
-                const dateAt = (row.original.dateOfIncident || row.original.publishedAt) as string
-                return <span className="text-gray-900 dark:text-gray-100 font-medium text-xs whitespace-nowrap">{formatDate(dateAt)}</span>
-            }
-        },
-        {
-            accessorKey: 'severityScore',
-            header: 'Sev',
-            cell: ({ row }) => {
-                const score = row.getValue('severityScore') as number
-                let color = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                if (score >= 7) color = 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/50 dark:text-red-200 dark:border-red-800'
-                else if (score >= 4) color = 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/50 dark:text-orange-200 dark:border-orange-800'
+                const item = row.original
+                const dateAt = item.dateOfIncident || item.publishedAt
 
                 return (
-                    <span className={`px-2 py-0.5 rounded text-xs border border-transparent ${color}`}>
-                        {score}
-                    </span>
+                    <div className="max-w-md space-y-1.5 py-1">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
+                                {formatDate(dateAt)}
+                            </span>
+                            {item.severityScore >= 7 && (
+                                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40">
+                                    গুরুতর ({item.severityScore}/10)
+                                </span>
+                            )}
+                        </div>
+                        <p className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm leading-snug hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                            {item.title}
+                        </p>
+                        {item.summary && (
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                                {item.summary}
+                            </p>
+                        )}
+                    </div>
                 )
             }
         },
         {
-            accessorKey: 'title',
-            header: 'Incident',
-            cell: ({ row }) => (
-                <div className="max-w-md">
-                    <p className="font-medium text-gray-900 dark:text-white truncate text-sm" title={row.original.title}>
-                        {row.original.title}
-                    </p>
-                    <div className="flex gap-2 mt-1">
-                        {/* Tags rendering from JSON string if needed, currently just simple text */}
+            accessorKey: 'category',
+            header: 'ধরন ও খাত (Category & Sector)',
+            cell: ({ row }) => {
+                const cat = row.original.category || 'Other'
+                const sector = row.original.sectorOrMinistry
+
+                let catBadge = 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300'
+                if (cat === 'Embezzlement' || cat === 'Loan Scam') {
+                    catBadge = 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40'
+                } else if (cat === 'Bribery' || cat === 'Tender Fraud') {
+                    catBadge = 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40'
+                } else if (cat === 'Money Laundering' || cat === 'Illegal Wealth') {
+                    catBadge = 'bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200 dark:border-purple-800/40'
+                }
+
+                return (
+                    <div className="flex flex-col gap-1.5 min-w-[130px]">
+                        <span className={`px-2 py-0.5 rounded-md text-xs font-semibold w-fit ${catBadge}`}>
+                            {cat}
+                        </span>
+                        {sector && (
+                            <span className="inline-flex items-center gap-1 text-xs text-zinc-600 dark:text-zinc-400 font-medium">
+                                <Building2 className="w-3.5 h-3.5 text-zinc-400" />
+                                {sector}
+                            </span>
+                        )}
                     </div>
+                )
+            }
+        },
+        {
+            accessorKey: 'amountFormatted',
+            header: 'আত্মসাৎ / আর্থিক ক্ষতি (Loss Amount)',
+            cell: ({ row }) => {
+                const amtStr = row.original.amountFormatted
+                const amtNum = row.original.amountInvolved
+
+                if (!amtStr && !amtNum) {
+                    return <span className="text-zinc-400 dark:text-zinc-600 text-xs">তদন্তাধীন</span>
+                }
+
+                return (
+                    <div className="flex flex-col">
+                        <span className="font-bold text-sm text-rose-600 dark:text-rose-400">
+                            {amtStr || `৳${amtNum?.toLocaleString()}`}
+                        </span>
+                    </div>
+                )
+            }
+        },
+        {
+            accessorKey: 'district',
+            header: 'ঘটনাস্থল (Location)',
+            cell: ({ row }) => (
+                <div className="flex flex-col text-xs min-w-[90px]">
+                    <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                        {row.original.district || 'অজানা'}
+                    </span>
+                    {row.original.locationText && (
+                        <span className="text-zinc-400 dark:text-zinc-500 truncate max-w-[110px]">
+                            {row.original.locationText}
+                        </span>
+                    )}
                 </div>
             )
         },
         {
-            accessorKey: 'district',
-            header: 'Location',
-            cell: ({ row }) => (
-                <span className="text-gray-600 dark:text-gray-300 text-sm">{row.getValue('district') || 'N/A'}</span>
-            )
-        },
-        {
-            accessorKey: 'casualties',
-            header: 'Casualties',
+            accessorKey: 'accusedEntities',
+            header: 'অভিযুক্ত ও তদন্ত সংস্থা (Accused & Agency)',
             cell: ({ row }) => {
-                const k = row.original.killed
-                const i = row.original.injured
-                if (k === 0 && i === 0) return <span className="text-gray-400 dark:text-gray-600 text-xs">-</span>
-                return (
-                    <div className="flex flex-col gap-1">
-                        {k > 0 && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 w-fit whitespace-nowrap border border-red-200 dark:border-red-800/50">
-                                {k} Killed
-                            </span>
-                        )}
-                        {i > 0 && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 w-fit whitespace-nowrap border border-amber-200 dark:border-amber-800/50">
-                                {i} Injured
-                            </span>
-                        )}
-                    </div>
-                )
-            }
-        },
-        {
-            accessorKey: 'politicalParties',
-            header: 'Involved Actors',
-            cell: ({ row }) => {
-                let parties: string[] = []
+                let accused: any[] = []
                 try {
-                    const raw = row.getValue('politicalParties') as string
-                    if (raw) parties = JSON.parse(raw)
-                    if (!Array.isArray(parties)) parties = [raw]
-                } catch (e) {
-                    parties = [row.getValue('politicalParties') as string]
-                }
+                    if (row.original.accusedEntities) {
+                        accused = JSON.parse(row.original.accusedEntities)
+                    }
+                } catch {}
+
+                const agency = row.original.investigatingAgency
+                const status = row.original.legalStatus
 
                 return (
-                    <div className="flex flex-col gap-1">
-                        {parties.slice(0, 3).map((p, idx) => {
-                            if (!p) return null
-                            let role = 'neutral'
-                            let text = p
+                    <div className="flex flex-col gap-1 min-w-[140px] max-w-[200px]">
+                        {accused.length > 0 ? (
+                            <div className="flex flex-col gap-0.5">
+                                {accused.slice(0, 2).map((a, i) => (
+                                    <span key={i} className="text-xs text-zinc-800 dark:text-zinc-200 font-medium truncate" title={`${a.name || ''} - ${a.designation || ''}`}>
+                                        👤 {a.name || 'অজ্ঞাত'} {a.designation ? `(${a.designation})` : ''}
+                                    </span>
+                                ))}
+                            </div>
+                        ) : (
+                            <span className="text-zinc-400 text-xs">-</span>
+                        )}
 
-                            // Naive role parsing
-                            const lowerP = p.toLowerCase()
-
-                            // Explicit generic terms regex (Including Plurals)
-                            // We list longer (plural) matches first to ensure greedy matching
-                            const culpritRegex = /[\(\[]?(miscreants|assailants|attackers|aggressors|culprits|terrorists|দুর্বৃত্তরা|সন্ত্রাসীরা|হামলাকারীরা|miscreant|assailant|attacker|aggressor|culprit|terrorist|দুর্বৃত্ত|সন্ত্রাসী|হামলাকারী|terror)[\)\]]?/gi
-                            const victimRegex = /[\(\[]?(victims|attacked|injured|আহতরা|নিহতরা|victim|আহত|নিহত)[\)\]]?/gi
-
-                            // Check for Culprit / Aggressor keywords (English + Bengali)
-                            if (
-                                lowerP.includes('culprit') || lowerP.includes('assailant') || lowerP.includes('attacker') ||
-                                lowerP.includes('aggressor') || lowerP.includes('miscreant') || lowerP.includes('terrorist') ||
-                                lowerP.includes('দুর্বৃত্ত') || lowerP.includes('সন্ত্রাসী') || lowerP.includes('হামলাকারী')
-                            ) {
-                                role = 'culprit'
-                                // Remove role tags/words to leave just the actor name (if any)
-                                text = p.replace(culpritRegex, '').trim()
-
-                                // Extra cleanup for lingering suffixes
-                                const cleanLower = text.toLowerCase()
-                                if (cleanLower === 'রা' || cleanLower === 's' || cleanLower === 'ra' || cleanLower === 'der' || cleanLower === 'দের') text = ''
-                            }
-                            // Check for Victim keywords
-                            else if (
-                                lowerP.includes('victim') || lowerP.includes('attacked') || lowerP.includes('injured') ||
-                                lowerP.includes('আহত') || lowerP.includes('নিহত')
-                            ) {
-                                role = 'victim'
-                                text = p.replace(victimRegex, '').trim()
-                                // Extra cleanup
-                                const cleanLower = text.toLowerCase()
-                                if (cleanLower === 'রা' || cleanLower === 's' || cleanLower === 'ra' || cleanLower === 'der' || cleanLower === 'দের') text = ''
-                            }
-
-                            // Clean up punctuation (Avoid \W because it strips Bengali)
-                            // Remove common wrapper chars: ( ) [ ] . , -
-                            text = text.replace(/^[ \(\)\[\]\.,-]+|[ \(\)\[\]\.,-]+$/g, '')
-                            text = text.trim()
-
-                            // If text becomes empty (e.g. input was just "Victim" or "Durbittora"), revert to a descriptive label
-                            if (!text) {
-                                if (role === 'culprit') text = 'Unidentified Criminals'
-                                if (role === 'victim') text = 'Unidentified Victim'
-                                if (role === 'neutral') text = p // Fallback
-                            }
-
-                            // Style based on role
-                            let badgeClass = "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                            if (role === 'victim') badgeClass = "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-500 dark:border-amber-800/50"
-                            if (role === 'culprit') badgeClass = "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800/50"
-
-                            // Don't show (victim) suffix if the text already contains the role name (e.g. Unidentified Victim)
-                            // or if role is neutral
-                            const showSuffix = role !== 'neutral' && !text.toLowerCase().includes(role)
-
-                            return (
-                                <span key={idx} className={`text-[10px] px-1.5 py-0.5 rounded border w-fit max-w-[150px] truncate ${badgeClass}`} title={p}>
-                                    {text}
-                                    {showSuffix && <span className="opacity-60 ml-1 text-[9px] uppercase tracking-tighter">({role})</span>}
-                                </span>
-                            )
-                        })}
+                        {agency && (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                <Scale className="w-3 h-3" />
+                                {agency}
+                            </span>
+                        )}
                     </div>
                 )
             }
         },
         {
             id: 'actions',
-            header: 'Sources',
+            header: 'উৎস (Source)',
             cell: ({ row }) => {
-                const primaryUrl = row.original.url
-                const primarySource = row.original.source || 'News'
-                let extraSources: any[] = []
-
-                if (row.original.additionalSources) {
-                    try {
-                        const raw = JSON.parse(row.original.additionalSources)
-                        // Client-side dedup to be safe
-                        extraSources = raw.filter((s: any, index: number, self: any[]) =>
-                            index === self.findIndex((t: any) => t.url === s.url) && s.url !== primaryUrl
-                        )
-                    } catch (e) { }
-                }
+                const url = row.original.url
+                const source = row.original.source || 'নিউজ'
 
                 return (
-                    <div className="flex flex-col gap-2 min-w-[100px]">
-                        <Link
-                            href={primaryUrl}
-                            target="_blank"
-                            className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 dark:hover:text-blue-300 rounded text-xs transition-colors border border-blue-200 dark:border-blue-800/30 w-fit font-medium"
-                            title={`Read on ${primarySource}`}
-                        >
-                            <span>{primarySource}</span>
-                            <ExternalLink className="h-3 w-3" />
-                        </Link>
-
-                        {/* Additional Sources */}
-                        {extraSources.length > 0 && (
-                            <div className="flex flex-col gap-1">
-                                <span className="text-[10px] text-gray-400 font-medium">Also reported by:</span>
-                                <div className="flex flex-wrap gap-1">
-                                    {extraSources.map((s, idx) => (
-                                        <a
-                                            key={idx}
-                                            href={s.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-[10px] px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded border border-gray-200 dark:border-gray-700 hover:border-blue-300 hover:text-blue-500 transition-colors"
-                                            title={s.title || s.source}
-                                        >
-                                            {s.source}
-                                        </a>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <Link
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-zinc-700 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-400 text-xs font-medium transition-all shadow-sm"
+                    >
+                        <span>{source}</span>
+                        <ExternalLink className="w-3 h-3" />
+                    </Link>
                 )
             }
         }
     ]
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-900 dark:text-white p-4 md:p-8 transition-colors">
-            <div className="max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Incident Data Archive</h1>
-                    <Link href="/" className="text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-                        ← Back to Dashboard
-                    </Link>
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+            {/* Header */}
+            <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-black text-zinc-900 dark:text-white flex items-center gap-2.5 tracking-tight">
+                        <ShieldAlert className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                        {t('data_table')} (দুর্নীতি ও আর্থিক কেলেঙ্কারি তথ্যভাণ্ডার)
+                    </h1>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                        জাতীয় সংবাদপত্র ও অনুসন্ধান থেকে এআই এবং দুদকের মাধ্যমে সংগৃহীত ও বিশ্লেষিত তথ্য। মোট নথিভুক্ত ঘটনা: <span className="font-bold text-zinc-900 dark:text-white">{totalItems}</span>
+                    </p>
                 </div>
-
-                <TableFilters
-                    filters={filters}
-                    setFilters={(f) => { setFilters(f); setPage(1); }} // Reset page on filter change
-                    districts={BD_DISTRICTS}
-                />
-
-                {loading ? (
-                    <div className="space-y-4">
-                        {[...Array(5)].map((_, i) => (
-                            <div key={i} className="h-12 bg-white dark:bg-gray-900 rounded animate-pulse border border-gray-200 dark:border-gray-800"></div>
-                        ))}
-                    </div>
-                ) : (
-                    <DataTable
-                        columns={columns}
-                        data={data}
-                        pagination={{
-                            pageIndex: page,
-                            pageSize: 20,
-                            total: totalItems,
-                            totalPages: totalPages,
-                            onPageChange: setPage
-                        }}
-                    />
-                )}
             </div>
+
+            {/* Filters */}
+            <TableFilters
+                filters={filters}
+                setFilters={setFilters}
+                districts={BD_DISTRICTS}
+            />
+
+            {/* Table */}
+            {loading ? (
+                <div className="h-64 flex flex-col items-center justify-center rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                    <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">তথ্য লোড হচ্ছে...</p>
+                </div>
+            ) : data.length === 0 ? (
+                <div className="h-64 flex flex-col items-center justify-center rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-center p-6">
+                    <ShieldAlert className="w-10 h-10 text-zinc-400 mb-2" />
+                    <h3 className="text-base font-semibold text-zinc-900 dark:text-white">কোনো তথ্য পাওয়া যায়নি</h3>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm">
+                        বর্তমান ফিল্টারে কোনো দুর্নীতির ঘটনা নথিভুক্ত নেই। ফিল্টার পরিবর্তন বা রিসেট করে পুনরায় অনুসন্ধান করুন।
+                    </p>
+                </div>
+            ) : (
+                <DataTable
+                    columns={columns}
+                    data={data}
+                    pagination={{
+                        pageIndex: page - 1,
+                        pageSize: 20,
+                        total: totalItems,
+                        totalPages: totalPages,
+                        onPageChange: (newPage) => setPage(newPage + 1),
+                    }}
+                />
+            )}
         </div>
     )
 }
 
 export default function DataPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+        <Suspense fallback={
+            <div className="container mx-auto px-4 py-8 max-w-7xl flex items-center justify-center min-h-[400px]">
+                <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        }>
             <DataContent />
         </Suspense>
     )

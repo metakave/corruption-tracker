@@ -68,14 +68,42 @@ export const DISTRICTS_BN_MAP: Record<string, string> = {
 
 export const BD_DISTRICTS = Object.keys(DISTRICTS_BN_MAP).sort();
 
+export const CORRUPTION_CATEGORIES = [
+    "Embezzlement",
+    "Bribery",
+    "Money Laundering",
+    "Tender Fraud",
+    "Loan Scam",
+    "Illegal Wealth",
+    "Power Abuse",
+    "Land Grabbing",
+    "Other"
+];
+
+export const CORRUPTION_SECTORS = [
+    "স্বাস্থ্য",
+    "ব্যাংকিং ও অর্থ",
+    "সড়ক ও সেতু",
+    "শিক্ষা",
+    "ভূমি ও গৃহায়ণ",
+    "কাস্টমস ও রাজস্ব (এনবিআর)",
+    "পুলিশ ও প্রশাসন",
+    "বিদ্যুৎ ও জ্বালানি",
+    "রেলওয়ে",
+    "স্থানীয় সরকার",
+    "অন্যান্য"
+];
+
 export const VIOLENCE_CATEGORIES = [
-    "Political Violence",
-    "Mob Justice / Lynchings",
-    "Communal / Religious Violence",
-    "Terrorism / Extremist Attacks",
-    "Criminal Violence",
-    "Gender-Based Violence",
-    "Non-Violence"
+    "Embezzlement",
+    "Bribery",
+    "Money Laundering",
+    "Tender Fraud",
+    "Loan Scam",
+    "Illegal Wealth",
+    "Power Abuse",
+    "Land Grabbing",
+    "Other"
 ];
 
 export const PARTY_CATEGORIES = [
