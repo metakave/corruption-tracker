@@ -109,26 +109,33 @@ export async function processArticleMetadata(scraped: ScrapedArticle) {
 }
 
 export async function processArticle(rawArticle: {
-    id: number
+    id?: number
     url: string
     title: string
-    content: string
-    publishedAt: Date
+    content?: string
+    publishedAt?: Date | string
+    time?: string
+    rawTime?: string
     source: string
 }) {
-    let bodyText = rawArticle.content
+    let bodyText = rawArticle.content || ''
     if (!bodyText || bodyText.length < 100) {
         bodyText = await fetchArticleBody(rawArticle.url)
-        if (bodyText) {
+        if (bodyText && rawArticle.id) {
             await prisma.rawNewsArticle.update({
                 where: { id: rawArticle.id },
                 data: { content: bodyText }
-            })
+            }).catch(() => {})
         }
     }
 
     const fullText = `${rawArticle.title}\n\n${bodyText}`
-    const publishedStr = rawArticle.publishedAt.toISOString().split('T')[0]
+    const pubDate = rawArticle.publishedAt
+        ? (rawArticle.publishedAt instanceof Date ? rawArticle.publishedAt : new Date(rawArticle.publishedAt))
+        : (rawArticle.time ? parseDateFromText(rawArticle.time) : (rawArticle.rawTime ? parseDateFromText(rawArticle.rawTime) : new Date()))
+
+    const validPubDate = !isNaN(pubDate.getTime()) ? pubDate : new Date()
+    const publishedStr = validPubDate.toISOString().split('T')[0]
 
     const aiResult = await analyzeWithAI(
         fullText,
@@ -144,10 +151,12 @@ export async function processArticle(rawArticle: {
     }
 
     if (!aiResult.is_corruption) {
-        await prisma.rawNewsArticle.update({
-            where: { id: rawArticle.id },
-            data: { isProcessed: true }
-        })
+        try {
+            await prisma.rawNewsArticle.update({
+                where: rawArticle.id ? { id: rawArticle.id } : { url: rawArticle.url },
+                data: { isProcessed: true }
+            })
+        } catch {}
         return { success: true, isCorruption: false }
     }
 
@@ -191,10 +200,12 @@ export async function processArticle(rawArticle: {
             data: { additionalSources: JSON.stringify(sources) }
         })
 
-        await prisma.rawNewsArticle.update({
-            where: { id: rawArticle.id },
-            data: { isProcessed: true }
-        })
+        try {
+            await prisma.rawNewsArticle.update({
+                where: rawArticle.id ? { id: rawArticle.id } : { url: rawArticle.url },
+                data: { isProcessed: true }
+            })
+        } catch {}
 
         return { success: true, merged: true, eventId: matchedEventId }
     }
@@ -205,8 +216,8 @@ export async function processArticle(rawArticle: {
             title: aiResult.title || rawArticle.title,
             url: rawArticle.url,
             source: rawArticle.source,
-            publishedAt: rawArticle.publishedAt,
-            dateOfIncident: aiResult.incident_date ? new Date(aiResult.incident_date) : rawArticle.publishedAt,
+            publishedAt: validPubDate,
+            dateOfIncident: aiResult.incident_date ? new Date(aiResult.incident_date) : validPubDate,
             locationText: aiResult.location.spot,
             district: coords.district || aiResult.location.district,
             latitude: coords.lat,
@@ -228,10 +239,12 @@ export async function processArticle(rawArticle: {
         }
     })
 
-    await prisma.rawNewsArticle.update({
-        where: { id: rawArticle.id },
-        data: { isProcessed: true }
-    })
+    try {
+        await prisma.rawNewsArticle.update({
+            where: rawArticle.id ? { id: rawArticle.id } : { url: rawArticle.url },
+            data: { isProcessed: true }
+        })
+    } catch {}
 
     return { success: true, created: true, eventId: newEvent.id }
 }

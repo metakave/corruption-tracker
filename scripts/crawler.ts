@@ -118,9 +118,8 @@ async function main() {
             console.log(`\n[${processedCount}/${articlesToProcess.length}] Processing: ${article.title.substring(0, 50)}...`)
             try {
                 const result = await processArticle(article)
-                // Count violence detections (if processArticle returns the created event)
-                if (result) {
-                    stats.violenceDetected++
+                if (result && result.success && (result.created || result.merged)) {
+                    stats.corruptionDetected++
                 }
             } catch (error) {
                 console.error(`Error processing article ${article.url}:`, error)
@@ -139,7 +138,7 @@ async function main() {
                 totalArticles: stats.totalArticles,
                 newArticles: stats.newArticles,
                 duplicates: stats.duplicates,
-                violenceDetected: stats.violenceDetected,
+                corruptionDetected: stats.corruptionDetected,
                 errors: errors.length > 0 ? JSON.stringify(errors) : null
             }
         })
@@ -148,7 +147,7 @@ async function main() {
         console.log(`   Total Articles: ${stats.totalArticles}`)
         console.log(`   New Articles: ${stats.newArticles}`)
         console.log(`   Duplicates: ${stats.duplicates}`)
-        console.log(`   Violence Detected: ${stats.violenceDetected}`)
+        console.log(`   Corruption Incidents Detected: ${stats.corruptionDetected}`)
         console.log(`   Errors: ${errors.length}`)
 
     } catch (error) {
