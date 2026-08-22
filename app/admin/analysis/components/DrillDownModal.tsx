@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { X, ExternalLink, AlertTriangle, Edit2 } from 'lucide-react';
-import { AnalysisEvent } from '../page';
+import { AnalysisEvent } from '../types';
 import { getEventBuckets } from '../utils';
 
 import EditEventModal from './EditEventModal'; // Import the new modal
@@ -34,22 +34,22 @@ export default function DrillDownModal({ metric, events, onClose, onUpdate, read
 
         if (metric.startsWith('district:')) {
             const districtName = metric.split(':')[1];
-            return events.filter(e => e.district === districtName).sort((a, b) => b.killed - a.killed);
+            return events.filter(e => e.district === districtName).sort((a, b) => (b.killed ?? 0) - (a.killed ?? 0));
         }
 
         if (metric.startsWith('perp:')) {
             const party = metric.split(':')[1];
-            return events.filter(e => e.perpetratorParties?.includes(party)).sort((a, b) => b.killed - a.killed);
+            return events.filter(e => e.perpetratorParties?.includes(party)).sort((a, b) => (b.killed ?? 0) - (a.killed ?? 0));
         }
 
         if (metric.startsWith('victim:')) {
             const party = metric.split(':')[1];
-            return events.filter(e => e.victimParties?.includes(party)).sort((a, b) => b.killed - a.killed);
+            return events.filter(e => e.victimParties?.includes(party)).sort((a, b) => (b.killed ?? 0) - (a.killed ?? 0));
         }
 
         switch (metric) {
-            case 'killed': return events.filter(e => e.killed > 0).sort((a, b) => b.killed - a.killed);
-            case 'injured': return events.filter(e => e.injured > 0).sort((a, b) => b.injured - a.injured);
+            case 'killed': return events.filter(e => (e.killed ?? 0) > 0).sort((a, b) => (b.killed ?? 0) - (a.killed ?? 0));
+            case 'injured': return events.filter(e => (e.injured ?? 0) > 0).sort((a, b) => (b.injured ?? 0) - (a.injured ?? 0));
             case 'political':
             case 'mob':
             case 'communal':
@@ -117,7 +117,7 @@ export default function DrillDownModal({ metric, events, onClose, onUpdate, read
                                         {/* Show parties tag if present */}
                                         {event.politicalParties && event.politicalParties.length > 0 && (
                                             <div className="flex flex-wrap gap-1 mt-1">
-                                                {event.politicalParties.map((p, i) => (
+                                                {event.politicalParties.map((p: string, i: number) => (
                                                     <span key={i} className="text-[10px] bg-blue-50 text-blue-600 px-1 rounded border border-blue-100">{p}</span>
                                                 ))}
                                             </div>
@@ -151,11 +151,11 @@ export default function DrillDownModal({ metric, events, onClose, onUpdate, read
                                         })()}
                                     </td>
                                     <td className="px-6 py-4 text-gray-500">{event.district}</td>
-                                    <td className={`px-6 py-4 text-center font-bold ${event.killed > 0 ? 'text-red-600' : 'text-gray-300'}`}>
-                                        {event.killed}
+                                    <td className={`px-6 py-4 text-center font-bold ${(event.killed ?? 0) > 0 ? 'text-red-600' : 'text-gray-300'}`}>
+                                        {event.killed ?? 0}
                                     </td>
-                                    <td className={`px-6 py-4 text-center font-bold ${event.injured > 0 ? 'text-orange-500' : 'text-gray-300'}`}>
-                                        {event.injured}
+                                    <td className={`px-6 py-4 text-center font-bold ${(event.injured ?? 0) > 0 ? 'text-orange-500' : 'text-gray-300'}`}>
+                                        {event.injured ?? 0}
                                     </td>
                                     {!readOnly && (
                                         <td className="px-6 py-4 text-right">

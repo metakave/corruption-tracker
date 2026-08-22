@@ -1,12 +1,10 @@
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import { NextResponse } from 'next/server'
-
-const prisma = new PrismaClient()
 
 export async function GET() {
     try {
-        const events = await prisma.politicalEvent.findMany({
-            orderBy: { dateOfIncident: 'desc' }
+        const events = await prisma.corruptionEvent.findMany({
+            orderBy: { publishedAt: 'desc' }
         })
 
         if (!events || events.length === 0) {
@@ -21,21 +19,21 @@ export async function GET() {
             'District',
             'Location Text',
             'Summary',
-            'Killed',
-            'Injured',
+            'Sector / Ministry',
+            'Amount Involved',
+            'Amount Formatted',
+            'Investigating Agency',
+            'Legal Status',
             'Severity',
             'Confidence',
             'Source',
             'URL',
-            'Political Parties',
-            'Incident Type',
-            'Victim Parties',
-            'Perpetrator Parties',
+            'Category',
             'Created At'
         ].join(',')
 
         // Convert Data to CSV Rows
-        const rows = events.map(e => {
+        const rows = events.map((e: any) => {
             // Helper to escape CSV fields
             const escape = (val: any) => {
                 if (val === null || val === undefined) return '';
@@ -46,20 +44,20 @@ export async function GET() {
             return [
                 escape(e.id),
                 escape(e.title),
-                escape(e.dateOfIncident?.toISOString().split('T')[0] || ''),
+                escape(e.dateOfIncident?.toISOString().split('T')[0] || e.publishedAt?.toISOString().split('T')[0] || ''),
                 escape(e.district),
                 escape(e.locationText),
                 escape(e.summary),
-                escape(e.killed),
-                escape(e.injured),
+                escape(e.sectorOrMinistry),
+                escape(e.amountInvolved),
+                escape(e.amountFormatted),
+                escape(e.investigatingAgency),
+                escape(e.legalStatus),
                 escape(e.severityScore),
                 escape(e.confidence),
                 escape(e.source),
                 escape(e.url),
-                escape(e.politicalParties),
-                escape(JSON.parse(e.tags || '[]')[0] || ''),
-                escape(e.victimParties),
-                escape(e.perpetratorParties),
+                escape(e.category),
                 escape(e.createdAt.toISOString())
             ].join(',')
         })
@@ -69,11 +67,11 @@ export async function GET() {
         return new NextResponse(csvContent, {
             headers: {
                 'Content-Type': 'text/csv; charset=utf-8',
-                'Content-Disposition': `attachment; filename="political_violence_data_${new Date().toISOString().split('T')[0]}.csv"`
+                'Content-Disposition': `attachment; filename="corruption_data_${new Date().toISOString().split('T')[0]}.csv"`
             }
         })
 
-    } catch (e) {
+    } catch (e: any) {
         return new NextResponse(`Error generating CSV: ${e instanceof Error ? e.message : String(e)}`, { status: 500 })
     }
 }

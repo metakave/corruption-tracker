@@ -30,8 +30,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // 2. Dynamic Event Routes (Fetch ALL)
     // Limited to 2000 recent events for performance, can paginate if needed later
-    const events = await prisma.politicalEvent.findMany({
-        where: { isPoliticalViolence: true },
+    const events = await prisma.corruptionEvent.findMany({
+        where: { isCorruption: true },
         select: { id: true, updatedAt: true, publishedAt: true },
         orderBy: { createdAt: 'desc' },
         take: 2000

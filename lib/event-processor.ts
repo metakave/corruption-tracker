@@ -1,13 +1,12 @@
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import { ScrapedArticle } from './scrapers/types'
 import { analyzeWithAI, checkDuplicateWithAI, AIAnalysisResult } from './ai-analysis'
 import { geocodeLocation } from './geocoding'
 import fs from 'fs'
 import path from 'path'
-import cheerio from 'cheerio'
+import * as cheerio from 'cheerio'
 import axios from 'axios'
 
-const prisma = new PrismaClient()
 const AUDIT_LOG_PATH = path.join(process.cwd(), 'logs', 'audit_trail.csv')
 
 const bnToEn: { [key: string]: string } = {
@@ -79,7 +78,7 @@ export async function fetchArticleBody(url: string): Promise<string> {
         const $ = cheerio.load(res.data)
         $('script, style, nav, footer, header, .advertisement, .ad-box').remove()
         const text = $('article p, .story-element p, .content-details p, .detail-content p, p')
-            .map((_, el) => $(el).text().trim())
+            .map((_: number, el: any) => $(el).text().trim())
             .get()
             .join('\n')
         return text || ''
@@ -161,13 +160,13 @@ export async function processArticle(rawArticle: {
     }
 
     // Geocoding
-    const coords = geocodeLocation(aiResult.location.district, aiResult.location.spot)
+    const coords = geocodeLocation(aiResult.location.district || aiResult.location.spot || '')
 
     // Check duplicates against existing CorruptionEvents
     const recentEvents = await prisma.corruptionEvent.findMany({
         where: {
             isCorruption: true,
-            district: coords.district || aiResult.location.district
+            district: coords?.district || aiResult.location.district
         },
         take: 10,
         orderBy: { publishedAt: 'desc' }
@@ -219,9 +218,9 @@ export async function processArticle(rawArticle: {
             publishedAt: validPubDate,
             dateOfIncident: aiResult.incident_date ? new Date(aiResult.incident_date) : validPubDate,
             locationText: aiResult.location.spot,
-            district: coords.district || aiResult.location.district,
-            latitude: coords.lat,
-            longitude: coords.lng,
+            district: coords?.district || aiResult.location.district,
+            latitude: coords?.lat || null,
+            longitude: coords?.lng || null,
             accusedEntities: JSON.stringify(aiResult.accused_entities || []),
             sectorOrMinistry: aiResult.sector_or_ministry,
             amountInvolved: aiResult.financial_impact.amount_bdt,

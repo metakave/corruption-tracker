@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-import type { PoliticalEvent } from '@prisma/client'
+import { prisma } from '@/lib/db'
+import type { CorruptionEvent } from '@prisma/client'
 import {
     Dataset,
     Format,
@@ -26,7 +26,6 @@ import {
 export const dynamic = 'force-dynamic'
 export const maxDuration = 120
 
-const prisma = new PrismaClient()
 const encoder = new TextEncoder()
 
 function fileHeaders(format: Format, base: string): Record<string, string> {
@@ -67,21 +66,21 @@ function inMemoryResponse<T>(
 async function handleEvents(sp: URLSearchParams, format: Format): Promise<NextResponse> {
     const where = buildEventWhere(sp)
     const cols = selectColumns(EVENT_COLUMNS, sp.get('cols'))
-    const events = await prisma.politicalEvent.findMany({ where, orderBy: { publishedAt: 'desc' } })
+    const events = await prisma.corruptionEvent.findMany({ where, orderBy: { publishedAt: 'desc' } })
 
     if (format === 'geojson') {
         const features = events
-            .filter((e: PoliticalEvent) => e.latitude != null && e.longitude != null)
-            .map((e: PoliticalEvent) => ({
+            .filter((e: CorruptionEvent) => e.latitude != null && e.longitude != null)
+            .map((e: CorruptionEvent) => ({
                 type: 'Feature' as const,
                 geometry: { type: 'Point' as const, coordinates: [e.longitude, e.latitude] },
                 properties: rowToObject(cols, e),
             }))
         const fc = { type: 'FeatureCollection' as const, features }
-        return new NextResponse(JSON.stringify(fc), { headers: fileHeaders('geojson', 'violence_events') })
+        return new NextResponse(JSON.stringify(fc), { headers: fileHeaders('geojson', 'corruption_events') })
     }
 
-    return inMemoryResponse(cols, events, format, 'violence_events', 'Events')
+    return inMemoryResponse(cols, events, format, 'corruption_events', 'Events')
 }
 
 // --- Raw corpus: up to 132k+ rows, stream CSV/JSON, cap XLSX -----------------
@@ -113,7 +112,7 @@ async function handleRaw(sp: URLSearchParams, format: Format): Promise<NextRespo
                 let cursor: number | null = null
                 let first = true
                 for (;;) {
-                    const batch = await prisma.rawNewsArticle.findMany({
+                    const batch: any[] = await prisma.rawNewsArticle.findMany({
                         where,
                         orderBy: { id: 'asc' },
                         take: STREAM_BATCH,
@@ -145,23 +144,22 @@ async function handleRaw(sp: URLSearchParams, format: Format): Promise<NextRespo
 async function handleStats(sp: URLSearchParams, format: Format): Promise<NextResponse> {
     const where = buildEventWhere(sp)
     const by = (sp.get('by') || 'day') as StatsBy
-    const events = await prisma.politicalEvent.findMany({ where, orderBy: { publishedAt: 'desc' } })
+    const events = await prisma.corruptionEvent.findMany({ where, orderBy: { publishedAt: 'desc' } })
 
-    const buckets = new Map<string, { events: number; killed: number; injured: number }>()
+    const buckets = new Map<string, { events: number; loss: number }>()
     for (const e of events) {
         let key: string
         if (by === 'category') key = e.category || '(uncategorized)'
         else if (by === 'district') key = e.district || '(unknown)'
         else key = e.publishedAt.toISOString().split('T')[0]
-        const b = buckets.get(key) || { events: 0, killed: 0, injured: 0 }
+        const b = buckets.get(key) || { events: 0, loss: 0 }
         b.events += 1
-        b.killed += e.killed ?? 0
-        b.injured += e.injured ?? 0
+        b.loss += e.amountInvolved ?? 0
         buckets.set(key, b)
     }
 
     const dimHeader = by === 'category' ? 'Category' : by === 'district' ? 'District' : 'Date'
-    type StatRow = { dim: string; events: number; killed: number; injured: number }
+    type StatRow = { dim: string; events: number; loss: number }
     const rows: StatRow[] = Array.from(buckets.entries())
         .map(([dim, v]) => ({ dim, ...v }))
         .sort((a, b) => (by === 'day' ? (a.dim < b.dim ? 1 : -1) : b.events - a.events))
@@ -169,10 +167,9 @@ async function handleStats(sp: URLSearchParams, format: Format): Promise<NextRes
     const cols: ColumnDef<StatRow>[] = [
         { key: 'dim', header: dimHeader, type: 'string', get: (r) => r.dim },
         { key: 'events', header: 'Events', type: 'number', get: (r) => r.events },
-        { key: 'killed', header: 'Killed', type: 'number', get: (r) => r.killed },
-        { key: 'injured', header: 'Injured', type: 'number', get: (r) => r.injured },
+        { key: 'loss', header: 'Loss Amount (BDT)', type: 'number', get: (r) => r.loss },
     ]
-    const base = `violence_stats_by_${by}`
+    const base = `corruption_stats_by_${by}`
     if (format === 'geojson') return NextResponse.json({ error: 'geojson not supported for stats' }, { status: 400 })
     return inMemoryResponse(cols, rows, format, base, dimHeader)
 }
@@ -185,9 +182,9 @@ async function handleAudit(sp: URLSearchParams, format: Format): Promise<NextRes
     const where = buildRawWhere(sp)
     const cols = selectColumns(AUDIT_COLUMNS, sp.get('cols'))
 
-    // Index of accepted (published) events by URL — ~1.8k rows, cheap to hold.
-    const events = await prisma.politicalEvent.findMany()
-    const accepted = new Map<string, PoliticalEvent>()
+    // Index of accepted (published) events by URL
+    const events = await prisma.corruptionEvent.findMany()
+    const accepted = new Map<string, CorruptionEvent>()
     for (const e of events) accepted.set(e.url, e)
 
     if (format === 'xlsx') {
@@ -209,7 +206,7 @@ async function handleAudit(sp: URLSearchParams, format: Format): Promise<NextRes
                 let cursor: number | null = null
                 let first = true
                 for (;;) {
-                    const batch = await prisma.rawNewsArticle.findMany({
+                    const batch: any[] = await prisma.rawNewsArticle.findMany({
                         where,
                         orderBy: { id: 'asc' },
                         take: STREAM_BATCH,

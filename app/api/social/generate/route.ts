@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Fetch event details
-        const event = await prisma.politicalEvent.findUnique({
+        const event = await prisma.corruptionEvent.findUnique({
             where: { id: eventId }
         });
 
@@ -41,10 +41,10 @@ export async function POST(request: NextRequest) {
         }
 
         // Generate photocard
-        const photocardUrl = await generatePhotocard(event, theme);
+        const photocardUrl = await generatePhotocard(event as any, theme);
 
         // Generate caption
-        const caption = await generateCaption(event);
+        const caption = await generateCaption(event as any);
 
         // Create database record
         const socialPost = await prisma.socialMediaPost.create({
@@ -82,8 +82,8 @@ export async function GET() {
                         title: true,
                         district: true,
                         dateOfIncident: true,
-                        killed: true,
-                        injured: true
+                        amountFormatted: true,
+                        sectorOrMinistry: true
                     }
                 }
             },

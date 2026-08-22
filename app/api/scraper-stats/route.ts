@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -24,20 +22,20 @@ export async function GET() {
             }
         });
 
-        // NEW: Get Violence statistics by source (Primary + Secondary from additionalSources)
-        const allEvents = await prisma.politicalEvent.findMany({
+        // Get Corruption statistics by source (Primary + Secondary from additionalSources)
+        const allEvents = await prisma.corruptionEvent.findMany({
             select: {
                 source: true,
                 additionalSources: true
             }
         });
 
-        const violenceBySource: Record<string, number> = {};
+        const corruptionBySource: Record<string, number> = {};
 
-        allEvents.forEach(event => {
+        allEvents.forEach((event: any) => {
             // Count primary source
             const primary = event.source;
-            violenceBySource[primary] = (violenceBySource[primary] || 0) + 1;
+            corruptionBySource[primary] = (corruptionBySource[primary] || 0) + 1;
 
             // Count additional sources
             if (event.additionalSources) {
@@ -46,7 +44,7 @@ export async function GET() {
                     if (Array.isArray(additional)) {
                         additional.forEach((src: any) => {
                             const name = src.source || 'Unknown';
-                            violenceBySource[name] = (violenceBySource[name] || 0) + 1;
+                            corruptionBySource[name] = (corruptionBySource[name] || 0) + 1;
                         });
                     }
                 } catch (e) {
@@ -57,7 +55,7 @@ export async function GET() {
 
         // Get overall statistics
         const totalArticles = await prisma.rawNewsArticle.count();
-        const totalViolence = await prisma.politicalEvent.count();
+        const totalCorruption = await prisma.corruptionEvent.count();
         const firstArticle = await prisma.rawNewsArticle.findFirst({
             orderBy: { scrapedAt: 'asc' },
             select: { scrapedAt: true }
@@ -74,23 +72,23 @@ export async function GET() {
         });
 
         // Format the response
-        const bySource: Record<string, { total: number; violence: number; lastScraped: string | null }> = {};
+        const bySource: Record<string, { total: number; corruption: number; lastScraped: string | null }> = {};
 
         // Initialize with scraping stats
-        sourceStats.forEach(stat => {
+        sourceStats.forEach((stat: any) => {
             bySource[stat.source] = {
                 total: stat._count.id,
-                violence: violenceBySource[stat.source] || 0,
+                corruption: corruptionBySource[stat.source] || 0,
                 lastScraped: stat._max.scrapedAt?.toISOString() || null
             };
         });
 
-        // Add any sources that have violence but no raw articles (edge case, but good for data integrity)
-        Object.keys(violenceBySource).forEach(source => {
+        // Add any sources that have corruption but no raw articles (edge case, but good for data integrity)
+        Object.keys(corruptionBySource).forEach(source => {
             if (!bySource[source]) {
                 bySource[source] = {
                     total: 0,
-                    violence: violenceBySource[source],
+                    corruption: corruptionBySource[source],
                     lastScraped: null
                 };
             }
@@ -104,23 +102,23 @@ export async function GET() {
                     ? Math.round((latestRun.endTime.getTime() - latestRun.startTime.getTime()) / 1000)
                     : null,
                 articlesFound: latestRun.totalArticles,
-                violenceDetected: latestRun.violenceDetected,
+                corruptionDetected: latestRun.corruptionDetected,
                 runId: latestRun.runId
             } : null,
             bySource,
             overall: {
                 totalArticles,
-                totalViolence,
+                totalCorruption,
                 firstDataDate: firstArticle?.scrapedAt?.toISOString() || null,
                 lastUpdate: lastUpdate?.scrapedAt?.toISOString() || null
             },
-            recentLogs: recentLogs.map(log => ({
+            recentLogs: recentLogs.map((log: any) => ({
                 runId: log.runId,
                 startTime: log.startTime.toISOString(),
                 endTime: log.endTime?.toISOString() || null,
                 status: log.status,
                 totalArticles: log.totalArticles,
-                violenceDetected: log.violenceDetected,
+                corruptionDetected: log.corruptionDetected,
                 sourcesScraped: log.sourcesScraped ? JSON.parse(log.sourcesScraped) : null,
                 errors: log.errors ? JSON.parse(log.errors) : null
             }))

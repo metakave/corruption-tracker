@@ -7,13 +7,13 @@ import { formatDate } from '@/lib/utils'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params
-    const event = await prisma.politicalEvent.findUnique({ where: { id } })
+    const event = await prisma.corruptionEvent.findUnique({ where: { id } })
 
     if (!event) return { title: 'Event Not Found' }
 
     const date = formatDate(event.dateOfIncident || event.publishedAt)
-    const title = `${event.title} - Violence Tracker BD`
-    const desc = event.summary ? event.summary.substring(0, 160) : `Detailed report of political violence incident in ${event.district || 'Bangladesh'} on ${date}.`
+    const title = `${event.title} - Corruption Tracker`
+    const desc = event.summary ? event.summary.substring(0, 160) : `Detailed report of corruption incident in ${event.district || 'Bangladesh'} on ${date}.`
 
     return {
         title,
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
             type: 'article',
             url: `https://violencetracker.org/events/${id}`,
             publishedTime: event.publishedAt.toISOString(),
-            section: 'Political Violence',
+            section: 'Corruption Intelligence',
             tags: JSON.parse(event.tags || '[]'),
         },
         twitter: {
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function EventDetails({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
 
-    const event = await prisma.politicalEvent.findUnique({
+    const event = await prisma.corruptionEvent.findUnique({
         where: { id }
     })
 
@@ -86,22 +86,23 @@ export default async function EventDetails({ params }: { params: Promise<{ id: s
                     />
 
                     <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
-                        <span className="bg-gray-100 px-3 py-1 rounded-full">{event.politicalParties || 'Unknown Party'}</span>
+                        <span className="bg-emerald-50 text-emerald-700 font-medium px-3 py-1 rounded-full border border-emerald-200">{event.sectorOrMinistry || 'General Sector'}</span>
+                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full">{event.category || 'Corruption'}</span>
                     </div>
                     <div className="flex items-center text-gray-500 mb-4">
                         <span>{formatDate(event.dateOfIncident || event.publishedAt)}</span>
                         <span className="mx-2">•</span>
-                        <span>{event.locationText || event.district || 'Unknown Location'}</span>
+                        <span>{event.locationText || event.district || 'Bangladesh'}</span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-8 bg-red-50 p-4 rounded-md border border-red-100">
+                    <div className="grid grid-cols-2 gap-4 mb-8 bg-amber-50 p-4 rounded-md border border-amber-200">
                         <div className="text-center">
-                            <p className="text-sm text-gray-600 uppercase tracking-wide">Killed</p>
-                            <p className="text-3xl font-bold text-red-600">{event.killed}</p>
+                            <p className="text-sm text-gray-600 uppercase tracking-wide">Amount Involved</p>
+                            <p className="text-2xl font-bold text-amber-700">{event.amountFormatted || (event.amountInvolved ? `৳${event.amountInvolved.toLocaleString()}` : 'Unspecified')}</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-sm text-gray-600 uppercase tracking-wide">Injured</p>
-                            <p className="text-3xl font-bold text-orange-600">{event.injured}</p>
+                            <p className="text-sm text-gray-600 uppercase tracking-wide">Legal Status</p>
+                            <p className="text-2xl font-bold text-slate-800 capitalize">{event.legalStatus || 'Allegation'}</p>
                         </div>
                     </div>
 

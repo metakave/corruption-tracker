@@ -10,11 +10,9 @@ async function main() {
 
     // Fetch all events, oldest first just in case
     // Or maybe newest first is better to fix the "Live Feed" immediately? Yes.
-    const events = await prisma.politicalEvent.findMany({
+    const events = await prisma.corruptionEvent.findMany({
         where: {
-            isPoliticalViolence: true,
-            // Optimization: Skip very old processed ones? 
-            // The user said "all dates". Let's do batches.
+            isCorruption: true,
         },
         orderBy: { createdAt: 'desc' },
         // take: 200 // Process ALL events now
@@ -73,7 +71,7 @@ async function main() {
                         continue;
                     }
 
-                    await prisma.politicalEvent.update({
+                    await prisma.corruptionEvent.update({
                         where: { id: event.id },
                         data: {
                             dateOfIncident: newDate,

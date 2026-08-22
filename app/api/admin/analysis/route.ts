@@ -22,9 +22,9 @@ export async function GET(request: Request) {
 
         console.log(`📊 API Analysis: Fetching from ${bdStartDate.toISOString()} to ${bdEndDate.toISOString()}`);
 
-        const events = await prisma.politicalEvent.findMany({
+        const events = await prisma.corruptionEvent.findMany({
             where: {
-                // Fetch ALL events for all violence categories
+                // Fetch ALL events for all categories
                 OR: [
                     {
                         dateOfIncident: {
@@ -47,16 +47,13 @@ export async function GET(request: Request) {
                 dateOfIncident: true,
                 publishedAt: true,
                 district: true,
-                killed: true,
-                injured: true,
+                amountInvolved: true,
+                sectorOrMinistry: true,
                 summary: true,
                 url: true,
-                isPoliticalViolence: true,
-                politicalParties: true,
-                victimParties: true,
-                perpetratorParties: true,
-                category: true, // Needed for dashboard stats
-                tags: true // Needed for advanced filtering
+                isCorruption: true,
+                category: true,
+                tags: true
             },
             orderBy: {
                 dateOfIncident: 'desc'

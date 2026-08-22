@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { X, Save, AlertTriangle } from 'lucide-react';
-import { AnalysisEvent } from '../../page';
+import { AnalysisEvent } from '../types';
 
 interface EditEventModalProps {
     event: AnalysisEvent;

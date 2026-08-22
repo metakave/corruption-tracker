@@ -1,4 +1,4 @@
-import type { PoliticalEvent, RawNewsArticle, Prisma } from '@prisma/client'
+import type { CorruptionEvent, RawNewsArticle, Prisma } from '@prisma/client'
 
 export type Dataset = 'events' | 'raw' | 'stats' | 'audit'
 export type Format = 'csv' | 'xlsx' | 'json' | 'geojson'
@@ -37,19 +37,15 @@ export function parseList(v: string | null): string {
 
 // Human-readable explanation of WHY an article was accepted as an event,
 // synthesized entirely from data already stored on the record (no live AI call).
-export function buildAcceptReasoning(e: PoliticalEvent): string {
+export function buildAcceptReasoning(e: CorruptionEvent): string {
     const meta: string[] = []
     if (e.confidence != null) meta.push(`${Math.round(e.confidence * 100)}% confidence`)
     if (e.severityScore != null) meta.push(`severity ${e.severityScore}/10`)
-    const casualties: string[] = []
-    if (e.killed) casualties.push(`${e.killed} killed`)
-    if (e.injured) casualties.push(`${e.injured} injured`)
-    const parties = parseList(e.politicalParties)
+    if (e.amountFormatted) meta.push(`loss: ${e.amountFormatted}`)
+    if (e.sectorOrMinistry) meta.push(`sector: ${e.sectorOrMinistry}`)
 
-    let s = `ACCEPTED — classified as ${e.category || 'violence'}`
+    let s = `ACCEPTED — classified as ${e.category || 'corruption'}`
     if (meta.length) s += ` (${meta.join(', ')})`
-    if (casualties.length) s += `; ${casualties.join(', ')}`
-    if (parties) s += `; parties: ${parties}`
     if (e.summary) s += `. Basis: ${e.summary}`
     return s
 }
@@ -58,7 +54,7 @@ export function buildAcceptReasoning(e: PoliticalEvent): string {
 // Column registries
 // ---------------------------------------------------------------------------
 
-export const EVENT_COLUMNS: ColumnDef<PoliticalEvent>[] = [
+export const EVENT_COLUMNS: ColumnDef<CorruptionEvent>[] = [
     { key: 'id', header: 'ID', type: 'string', get: (e) => e.id },
     { key: 'title', header: 'Title', type: 'string', get: (e) => e.title },
     { key: 'publishedAt', header: 'Published Date', type: 'date', get: (e) => dateOnly(e.publishedAt) },
@@ -67,20 +63,19 @@ export const EVENT_COLUMNS: ColumnDef<PoliticalEvent>[] = [
     { key: 'locationText', header: 'Location', type: 'string', get: (e) => e.locationText },
     { key: 'latitude', header: 'Latitude', type: 'number', get: (e) => e.latitude },
     { key: 'longitude', header: 'Longitude', type: 'number', get: (e) => e.longitude },
-    { key: 'killed', header: 'Killed', type: 'number', get: (e) => e.killed ?? 0 },
-    { key: 'injured', header: 'Injured', type: 'number', get: (e) => e.injured ?? 0 },
+    { key: 'sectorOrMinistry', header: 'Sector / Ministry', type: 'string', get: (e) => e.sectorOrMinistry },
+    { key: 'amountInvolved', header: 'Amount Involved (BDT)', type: 'number', get: (e) => e.amountInvolved },
+    { key: 'amountFormatted', header: 'Amount Formatted', type: 'string', get: (e) => e.amountFormatted },
+    { key: 'investigatingAgency', header: 'Investigating Agency', type: 'string', get: (e) => e.investigatingAgency },
+    { key: 'legalStatus', header: 'Legal Status', type: 'string', get: (e) => e.legalStatus },
     { key: 'severityScore', header: 'Severity', type: 'number', get: (e) => e.severityScore },
     { key: 'confidence', header: 'Confidence', type: 'number', get: (e) => e.confidence },
     { key: 'category', header: 'Category', type: 'string', get: (e) => e.category },
-    { key: 'politicalParties', header: 'Political Parties', type: 'string', get: (e) => parseList(e.politicalParties) },
-    { key: 'victimParties', header: 'Victim Parties', type: 'string', get: (e) => parseList(e.victimParties) },
-    { key: 'perpetratorParties', header: 'Perpetrator Parties', type: 'string', get: (e) => parseList(e.perpetratorParties) },
-    { key: 'actors', header: 'Actors', type: 'string', get: (e) => parseList(e.actors) },
     { key: 'summary', header: 'Summary', type: 'string', get: (e) => e.summary },
     { key: 'source', header: 'Source', type: 'string', get: (e) => e.source },
     { key: 'additionalSources', header: 'Additional Sources', type: 'string', get: (e) => e.additionalSources },
     { key: 'url', header: 'URL', type: 'string', get: (e) => e.url },
-    { key: 'isPoliticalViolence', header: 'Is Political Violence', type: 'string', get: (e) => (e.isPoliticalViolence ? 'yes' : 'no') },
+    { key: 'isCorruption', header: 'Is Corruption', type: 'string', get: (e) => (e.isCorruption ? 'yes' : 'no') },
     { key: 'aiReasoning', header: 'AI Decision Reasoning', type: 'string', get: (e) => buildAcceptReasoning(e) },
     { key: 'createdAt', header: 'Created At', type: 'date', get: (e) => dateTime(e.createdAt) },
 ]
@@ -104,10 +99,10 @@ export type Decision = 'Published' | 'Processed — not published' | 'Pending'
 export interface AuditRow {
     raw: RawNewsArticle
     decision: Decision
-    event: PoliticalEvent | null
+    event: CorruptionEvent | null
 }
 
-export function classifyDecision(raw: RawNewsArticle, accepted: Map<string, PoliticalEvent>): AuditRow {
+export function classifyDecision(raw: RawNewsArticle, accepted: Map<string, CorruptionEvent>): AuditRow {
     const event = accepted.get(raw.url) ?? null
     let decision: Decision
     if (event) decision = 'Published'
@@ -123,7 +118,7 @@ export function buildAuditReasoning(row: AuditRow): string {
     if (row.decision === 'Published' && row.event) {
         return buildAcceptReasoning(row.event)
     }
-    return 'NOT PUBLISHED — processed by the AI but produced no standalone event: either filtered out as non-qualifying (not political/social violence, off-topic, or outside the recency window) or merged into an existing incident as a duplicate source.'
+    return 'NOT PUBLISHED — processed by the AI but produced no standalone event: either filtered out as non-qualifying (not corruption, off-topic, or outside the recency window) or merged into an existing incident as a duplicate source.'
 }
 
 export const AUDIT_COLUMNS: ColumnDef<AuditRow>[] = [
@@ -173,8 +168,8 @@ function intParam(v: string | null): number | undefined {
     return isNaN(n) ? undefined : n
 }
 
-export function buildEventWhere(sp: URLSearchParams): Prisma.PoliticalEventWhereInput {
-    const where: Prisma.PoliticalEventWhereInput = {}
+export function buildEventWhere(sp: URLSearchParams): Prisma.CorruptionEventWhereInput {
+    const where: Prisma.CorruptionEventWhereInput = {}
     const dr = dateRange(sp.get('from'), sp.get('to'))
     if (dr) where.publishedAt = dr
 
@@ -187,21 +182,9 @@ export function buildEventWhere(sp: URLSearchParams): Prisma.PoliticalEventWhere
     const minSeverity = intParam(sp.get('minSeverity'))
     if (minSeverity !== undefined) where.severityScore = { gte: minSeverity }
 
-    const minKilled = intParam(sp.get('minKilled'))
-    if (minKilled !== undefined) where.killed = { gte: minKilled }
+    const sector = sp.get('sector')
+    if (sector) where.sectorOrMinistry = { contains: sector }
 
-    const minInjured = intParam(sp.get('minInjured'))
-    if (minInjured !== undefined) where.injured = { gte: minInjured }
-
-    const party = sp.get('party')
-    if (party) {
-        where.OR = [
-            { politicalParties: { contains: party } },
-            { victimParties: { contains: party } },
-            { perpetratorParties: { contains: party } },
-            { actors: { contains: party } },
-        ]
-    }
     return where
 }
 

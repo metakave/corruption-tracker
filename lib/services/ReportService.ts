@@ -34,9 +34,9 @@ export class ReportService {
     async fetchEvents(startDate: Date, endDate: Date): Promise<any[]> {
         console.log(`Fetching events from ${startDate.toISOString()} to ${endDate.toISOString()}`)
 
-        return await prisma.politicalEvent.findMany({
+        return await prisma.corruptionEvent.findMany({
             where: {
-                isPoliticalViolence: true, // Base filter
+                isCorruption: true, // Base filter
                 OR: [
                     {
                         dateOfIncident: {

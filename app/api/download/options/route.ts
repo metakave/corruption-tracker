@@ -1,72 +1,44 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-const prisma = new PrismaClient()
-
-// Party/actor fields are stored as JSON arrays or plain strings — flatten them.
-function collectParties(values: (string | null)[], counts: Map<string, number>): void {
-    for (const v of values) {
-        if (!v) continue
-        let items: string[]
-        try {
-            const parsed: unknown = JSON.parse(v)
-            items = Array.isArray(parsed) ? parsed.map((x) => String(x)) : [v]
-        } catch {
-            items = [v]
-        }
-        for (const raw of items) {
-            const name = raw.trim()
-            if (name && name.length <= 40) counts.set(name, (counts.get(name) || 0) + 1)
-        }
-    }
-}
-
 export async function GET(): Promise<NextResponse> {
     try {
-        const [districts, categories, sources, eventCount, rawCount, rawUnprocessed, partyRows] = await Promise.all([
-            prisma.politicalEvent.findMany({
+        const [districts, categories, sectors, sources, eventCount, rawCount, rawUnprocessed] = await Promise.all([
+            prisma.corruptionEvent.findMany({
                 where: { district: { not: null } },
                 distinct: ['district'],
                 select: { district: true },
                 orderBy: { district: 'asc' },
             }),
-            prisma.politicalEvent.findMany({
+            prisma.corruptionEvent.findMany({
                 where: { category: { not: null } },
                 distinct: ['category'],
                 select: { category: true },
                 orderBy: { category: 'asc' },
+            }),
+            prisma.corruptionEvent.findMany({
+                where: { sectorOrMinistry: { not: null } },
+                distinct: ['sectorOrMinistry'],
+                select: { sectorOrMinistry: true },
+                orderBy: { sectorOrMinistry: 'asc' },
             }),
             prisma.rawNewsArticle.findMany({
                 distinct: ['source'],
                 select: { source: true },
                 orderBy: { source: 'asc' },
             }),
-            prisma.politicalEvent.count(),
+            prisma.corruptionEvent.count(),
             prisma.rawNewsArticle.count(),
             prisma.rawNewsArticle.count({ where: { isProcessed: false } }),
-            prisma.politicalEvent.findMany({
-                select: { politicalParties: true, victimParties: true, perpetratorParties: true },
-            }),
         ])
-
-        const partyCounts = new Map<string, number>()
-        for (const r of partyRows) {
-            collectParties([r.politicalParties, r.victimParties, r.perpetratorParties], partyCounts)
-        }
-        const parties = Array.from(partyCounts.entries())
-            .filter(([, c]) => c >= 2)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 60)
-            .map(([name]) => name)
-            .sort((a, b) => a.localeCompare(b, 'bn'))
 
         return NextResponse.json({
             districts: districts.map((d) => d.district).filter(Boolean),
             categories: categories.map((c) => c.category).filter(Boolean),
+            sectors: sectors.map((s) => s.sectorOrMinistry).filter(Boolean),
             sources: sources.map((s) => s.source).filter(Boolean),
-            parties,
             counts: { events: eventCount, raw: rawCount, rawUnprocessed },
         })
     } catch (err) {

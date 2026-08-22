@@ -1,17 +1,15 @@
 
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import { NextResponse } from 'next/server'
-
-const prisma = new PrismaClient()
 
 export async function GET() {
     try {
-        const events = await prisma.politicalEvent.findMany({
+        const events = await prisma.corruptionEvent.findMany({
             orderBy: { publishedAt: 'desc' },
         })
 
         const csvRows = [
-            ['ID', 'Title', 'Date', 'Location', 'Killed', 'Injured', 'Summary', 'URL', 'Severity', 'Parties'],
+            ['ID', 'Title', 'Date', 'Location', 'Sector / Ministry', 'Amount Involved', 'Summary', 'URL', 'Severity', 'Category'],
         ]
 
         for (const event of events) {
@@ -21,19 +19,17 @@ export async function GET() {
                 return `"${text.replace(/"/g, '""')}"`
             }
 
-            const parties = event.politicalParties ? JSON.parse(event.politicalParties).join(', ') : ''
-
             csvRows.push([
                 event.id,
                 escape(event.title),
-                event.publishedAt.toISOString().split('T')[0],
+                (event.dateOfIncident || event.publishedAt).toISOString().split('T')[0],
                 escape(event.locationText || event.district),
-                event.killed?.toString() || '0',
-                event.injured?.toString() || '0',
+                escape(event.sectorOrMinistry),
+                event.amountFormatted || (event.amountInvolved ? `BDT ${event.amountInvolved}` : ''),
                 escape(event.summary),
                 escape(event.url),
                 event.severityScore?.toString() || '1',
-                escape(parties)
+                escape(event.category)
             ])
         }
 
@@ -46,7 +42,7 @@ export async function GET() {
         return new NextResponse(finalCsv, {
             headers: {
                 'Content-Type': 'text/csv; charset=utf-8',
-                'Content-Disposition': 'attachment; filename="political_violence_data.csv"',
+                'Content-Disposition': 'attachment; filename="corruption_data.csv"',
             },
         })
     } catch (error) {

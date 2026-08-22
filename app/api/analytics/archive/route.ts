@@ -23,9 +23,8 @@ export async function GET(request: Request) {
 
         console.log(`📊 Archive API: Fetching from ${bdStartDate.toISOString()} to ${bdEndDate.toISOString()}`);
 
-        const events = await prisma.politicalEvent.findMany({
+        const events = await prisma.corruptionEvent.findMany({
             where: {
-                // Fetch ALL events for all violence categories
                 OR: [
                     {
                         dateOfIncident: {
@@ -48,58 +47,41 @@ export async function GET(request: Request) {
                 dateOfIncident: true,
                 publishedAt: true,
                 district: true,
-                killed: true,
-                injured: true,
+                amountInvolved: true,
+                amountFormatted: true,
+                sectorOrMinistry: true,
                 summary: true,
                 url: true,
-                isPoliticalViolence: true,
-                politicalParties: true,
-                victimParties: true,
-                perpetratorParties: true,
-                category: true, // Needed for dashboard stats
-                tags: true, // Needed for advanced filtering
-                latitude: true, // For map visualization
-                longitude: true // For map visualization
+                isCorruption: true,
+                category: true,
+                tags: true,
+                latitude: true,
+                longitude: true
             },
             orderBy: {
-                dateOfIncident: 'desc'
+                publishedAt: 'desc'
             }
         });
 
-        // Basic server-side aggregation (optional, but good for validation)
-        const totalKilled = events.reduce((acc: number, curr: any) => acc + (curr.killed || 0), 0);
-        const totalInjured = events.reduce((acc: number, curr: any) => acc + (curr.injured || 0), 0);
+        const totalLoss = events.reduce((acc: number, curr: any) => acc + (curr.amountInvolved || 0), 0);
 
         return NextResponse.json({
             meta: {
                 count: events.length,
-                totalKilled,
-                totalInjured,
+                totalLoss,
                 period: { start: bdStartDate, end: bdEndDate }
             },
             events: events.map((e: any) => {
-                const parseJSON = (str: string | null) => {
-                    if (!str) return [];
-                    try {
-                        const parsed = JSON.parse(str);
-                        return Array.isArray(parsed) ? parsed : [str];
-                    } catch {
-                        return [str];
-                    }
-                };
-
                 return {
                     id: e.id,
                     date: (e.dateOfIncident || e.publishedAt).toISOString().split('T')[0],
                     title: e.title,
                     summary: e.summary,
                     district: e.district || 'Unknown',
-                    killed: e.killed || 0,
-                    injured: e.injured || 0,
-                    isPolitical: e.isPoliticalViolence,
-                    politicalParties: parseJSON(e.politicalParties),
-                    victimParties: parseJSON(e.victimParties),
-                    perpetratorParties: parseJSON(e.perpetratorParties),
+                    amountInvolved: e.amountInvolved || 0,
+                    amountFormatted: e.amountFormatted || '',
+                    sectorOrMinistry: e.sectorOrMinistry || '',
+                    isCorruption: e.isCorruption,
                     url: e.url,
                     category: e.category,
                     tags: e.tags,

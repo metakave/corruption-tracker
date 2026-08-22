@@ -49,7 +49,7 @@ export async function PUT(
             updateData.politicalParties = JSON.stringify(body.politicalParties);
         }
 
-        const updatedEvent = await prisma.politicalEvent.update({
+        const updatedEvent = await prisma.corruptionEvent.update({
             where: { id },
             data: updateData
         });
@@ -75,7 +75,7 @@ export async function DELETE(
 
         console.log(`🗑️ Deleting Event ${id}`);
 
-        await prisma.politicalEvent.delete({
+        await prisma.corruptionEvent.delete({
             where: { id }
         });
 

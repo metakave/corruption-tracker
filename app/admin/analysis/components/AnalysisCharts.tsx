@@ -14,7 +14,7 @@ import {
     Filler,
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import { AnalysisEvent } from '../page';
+import { AnalysisEvent } from '../types';
 import { getEventBuckets, CATEGORY_COLORS } from '../utils';
 
 ChartJS.register(
@@ -152,14 +152,14 @@ export default function AnalysisCharts({ events, onDistrictClick, onCategoryClic
     events.forEach(e => {
         // Perpetrators
         if (e.perpetratorParties) {
-            e.perpetratorParties.forEach(p => {
+            e.perpetratorParties.forEach((p: string) => {
                 const name = p.trim(); // Normalize?
                 perpCount[name] = (perpCount[name] || 0) + 1;
             });
         }
         // Victims
         if (e.victimParties) {
-            e.victimParties.forEach(p => {
+            e.victimParties.forEach((p: string) => {
                 const name = p.trim();
                 vicCount[name] = (vicCount[name] || 0) + 1;
             });

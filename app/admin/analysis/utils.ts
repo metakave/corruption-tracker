@@ -1,5 +1,5 @@
 
-import { AnalysisEvent } from '../../analytics/page';
+import { AnalysisEvent } from './types';
 
 export type CategoryBucket = 'political' | 'mob' | 'communal' | 'gender' | 'criminal' | 'terrorism';
 
