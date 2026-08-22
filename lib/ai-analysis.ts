@@ -50,6 +50,25 @@ export interface AIAnalysisResult {
     failure_reason?: string
 }
 
+function safeParseJSON<T>(text: string): T {
+    let clean = text.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim()
+    try {
+        return JSON.parse(clean)
+    } catch {
+        // Fix bad unicode or invalid escape characters commonly outputted by LLMs
+        clean = clean
+            .replace(/\\u(?![0-9a-fA-F]{4})/gi, '\\\\u')
+            .replace(/\\[^"\\\/bfnrtu]/g, (match) => match.slice(1))
+        
+        const firstBrace = clean.indexOf('{')
+        const lastBrace = clean.lastIndexOf('}')
+        if (firstBrace !== -1 && lastBrace !== -1) {
+            clean = clean.substring(firstBrace, lastBrace + 1)
+        }
+        return JSON.parse(clean)
+    }
+}
+
 export async function analyzeWithAI(
     articleText: string,
     title: string,
@@ -168,8 +187,7 @@ ${articleText}
             timeoutMs: 45000
         })
 
-        const cleanJson = responseText.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim()
-        const parsed: AIAnalysisResult = JSON.parse(cleanJson)
+        const parsed: AIAnalysisResult = safeParseJSON<AIAnalysisResult>(responseText)
 
         parsed.url = url
         parsed.source_name = sourceName
@@ -210,9 +228,8 @@ Respond ONLY with valid JSON:
             timeoutMs: 30000
         })
 
-        const cleanJson = responseText.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim()
-        const data = JSON.parse(cleanJson)
-        return data.is_same_incident === true
+        const data = safeParseJSON<{ is_same_incident?: boolean }>(responseText)
+        return data?.is_same_incident === true
     } catch {
         return false
     }
