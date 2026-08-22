@@ -111,3 +111,23 @@ model SocialMediaPost {
   @@index([status])
   @@index([createdAt])
 }
+
+model DownloadRequest {
+  id          String   @id @default(cuid())
+  name        String
+  whatsapp    String
+  email       String
+  company     String
+  designation String
+  dataset     String   @default("events")
+  format      String   @default("csv")
+  filters     String?  // JSON stringified filters
+  downloadUrl String?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
+
