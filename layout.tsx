@@ -108,9 +108,7 @@ export default function RootLayout({
           <LanguageProvider>
             <div className="flex w-full min-h-screen">
               {/* Sidebar is client-only mainly for usePathname */}
-              <div className="hidden md:block">
-                <DashboardSidebar />
-              </div>
+              <DashboardSidebar />
 
               <div className="flex-1 flex flex-col min-w-0">
                 <DashboardNavbar />

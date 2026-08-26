@@ -5,15 +5,18 @@ export const prisma = globalForPrisma.prisma || new PrismaClient()
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
-export async function getStats() {
+export async function getStats(days: number = 7) {
     try {
         const today = new Date()
         const startOfDay = new Date(new Date(today).setHours(0, 0, 0, 0))
-        const sevenDaysAgo = new Date(new Date().setDate(new Date().getDate() - 7))
+        const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
         // 1. Total Corruption Incidents
         const totalIncidents = await prisma.corruptionEvent.count({
-            where: { isCorruption: true }
+            where: {
+                isCorruption: true,
+                publishedAt: { gte: startDate }
+            }
         })
 
         // 2. Today's Incidents
@@ -24,11 +27,12 @@ export async function getStats() {
             }
         })
 
-        // 3. Largest Financial Scam (All time or last 30 days)
+        // 3. Largest Financial Scam (within timeframe)
         const largestScam = await prisma.corruptionEvent.findFirst({
             where: {
                 isCorruption: true,
-                amountInvolved: { not: null }
+                amountInvolved: { not: null },
+                publishedAt: { gte: startDate }
             },
             orderBy: { amountInvolved: 'desc' },
             select: { title: true, amountFormatted: true, amountInvolved: true, url: true, sectorOrMinistry: true }
@@ -36,7 +40,10 @@ export async function getStats() {
 
         // 4. Total Financial Loss Tracked (Crores)
         const aggregations = await prisma.corruptionEvent.aggregate({
-            where: { isCorruption: true },
+            where: {
+                isCorruption: true,
+                publishedAt: { gte: startDate }
+            },
             _sum: { amountInvolved: true }
         })
         const totalFinancialLossBDT = aggregations._sum.amountInvolved || 0
@@ -47,7 +54,8 @@ export async function getStats() {
             by: ['sectorOrMinistry'],
             where: {
                 isCorruption: true,
-                sectorOrMinistry: { not: null }
+                sectorOrMinistry: { not: null },
+                publishedAt: { gte: startDate }
             },
             _count: { id: true },
             orderBy: { _count: { id: 'desc' } },
@@ -63,7 +71,8 @@ export async function getStats() {
             by: ['district'],
             where: {
                 isCorruption: true,
-                district: { not: null }
+                district: { not: null },
+                publishedAt: { gte: startDate }
             },
             _count: { id: true },
             orderBy: { _count: { id: 'desc' } },

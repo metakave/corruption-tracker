@@ -6,18 +6,19 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
-        const timeRange = searchParams.get('timeRange')
+        const timeRange = searchParams.get('timeRange') || '7d'
 
         let dateFilter: any = undefined
-        if (timeRange && timeRange !== 'all') {
-            const now = new Date()
-            let days = 30
+        let days = 7
+        if (timeRange !== 'all') {
             if (timeRange === '7d') days = 7
             else if (timeRange === '30d') days = 30
             else if (timeRange === '3m') days = 90
             else if (timeRange === '1y') days = 365
             const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
             dateFilter = { gte: startDate }
+        } else {
+            days = 36500 // roughly all time (100 years)
         }
 
         const baseWhere = {
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
             ...(dateFilter ? { publishedAt: dateFilter } : {})
         }
 
-        const stats = await getStats()
+        const stats = await getStats(days)
 
         // Sector breakdowns
         const sectorBreakdowns = await prisma.corruptionEvent.groupBy({

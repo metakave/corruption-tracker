@@ -35,7 +35,7 @@ export default function DashboardSidebar() {
     ]
 
     return (
-        <aside className="w-64 bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 flex flex-col shrink-0 min-h-screen">
+        <aside className="hidden md:flex w-64 bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 flex-col shrink-0">
             {/* Brand Logo */}
             <div className="p-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md">
